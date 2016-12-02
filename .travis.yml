@@ -1,9 +1,7 @@
 language: go
 
 go:
-  - 1.6
+  - 1.7
   - tip
 install:
-  - go get github.com/Sirupsen/logrus
-  - go get github.com/BurntSushi/toml
-  - go get github.com/bitly/go-nsq
+  - export GOPATH="${TRAVIS_BUILD_DIR}"
