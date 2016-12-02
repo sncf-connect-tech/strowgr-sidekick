@@ -6,5 +6,7 @@ go:
 gobuild_args: -ldflags "-X main.Version=$(cat $TRAVIS_BUILD_DIR/VERSION) -X GitCommit=$(git rev-parse --short HEAD) -X GitBranch=$(git rev-parse --abbrev-ref HEAD)"
 before_script:
   - go vet sidekick
+  - go test sidekick
+script: go build sidekick -o "sidekick-$(cat $TRAVIS_BUILD_DIR/VERSION)"
 install:
   - export GOPATH="${TRAVIS_BUILD_DIR}"
