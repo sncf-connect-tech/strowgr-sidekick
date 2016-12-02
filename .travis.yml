@@ -7,6 +7,15 @@ gobuild_args: -ldflags "-X main.Version=$(cat $TRAVIS_BUILD_DIR/VERSION) -X GitC
 before_script:
   - go vet sidekick
   - go test sidekick
-script: go build sidekick -o "sidekick-$(cat $TRAVIS_BUILD_DIR/VERSION)"
+script: go build -o "sidekick-$(cat $TRAVIS_BUILD_DIR/VERSION)" sidekick
 install:
   - export GOPATH="${TRAVIS_BUILD_DIR}"
+
+deploy:
+  provider: releases
+  api_key: "3c15c3b85c303197743bc0ca3c5a2ae5de314110"
+  file: "sidekick-$(cat $TRAVIS_BUILD_DIR/VERSION)"
+  skip_cleanup: true
+  on:
+    tags: true
+                
