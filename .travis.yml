@@ -1,7 +1,6 @@
 language: go
 go:
   - 1.7
-  - tip
 before_script:
   - go vet sidekick
   - go test sidekick
