@@ -13,7 +13,7 @@ install:
 
 deploy:
   provider: releases
-  api_key: "3c15c3b85c303197743bc0ca3c5a2ae5de314110"
+  api_key: "68tshVqX9tiR2pR2yh28"
   file: "sidekick-$(cat $TRAVIS_BUILD_DIR/VERSION)"
   skip_cleanup: true
   on:
