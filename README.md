@@ -1,4 +1,4 @@
-[![Build Status]](https://travis-ci.org/voyages-sncf-technologies/strowgr.svg?branch=develop)(https://travis-ci.org/voyages-sncf-technologies/strowgr-sidekick)[![GitHub release](https://img.shields.io/github/release/qubyte/rubidium.svg)](https://github.com/voyages-sncf-technologies/strowgr-sidekick/releases/latest)
+[![Build Status](https://travis-ci.org/voyages-sncf-technologies/strowgr-sidekick.svg?branch=0.2.x)](https://travis-ci.org/voyages-sncf-technologies/strowgr-sidekick) [![GitHub release](https://img.shields.io/github/release/qubyte/rubidium.svg)](https://github.com/voyages-sncf-technologies/strowgr-sidekick/releases/latest)
 
 # Build
 
