@@ -8,8 +8,8 @@ before_script:
   - go test sidekick
 script:
   - go build -o "sidekick-$(cat $TRAVIS_BUILD_DIR/VERSION)" -ldflags "-X main.Version=$(cat $TRAVIS_BUILD_DIR/VERSION) -X GitCommit=$(git rev-parse --short HEAD) -X GitBranch=$(git rev-parse --abbrev-ref HEAD)" sidekick
-  - go test -coverprofile=sidekick.cov  sidekick/internal
-  - $HOME/gopath/bin/goveralls -service=travis-ci -package=sidekick/internal -coverprofile=sidekick.cov -repotoken $COVERALLS_TOKEN
+  - go test -coverprofile=coverage.txt -covermode=count sidekick/internal
+  - $HOME/gopath/bin/goveralls -service=travis-ci -package=sidekick/internal -coverprofile=coverage.txt -repotoken $COVERALLS_TOKEN
 install:
   - export GOPATH="${TRAVIS_BUILD_DIR}"
 deploy:
@@ -22,5 +22,5 @@ deploy:
     tags: true      
     repo: voyages-sncf-technologies/strowgr-sidekick
     branch: 0.2.x
-fter_success:
+after_success:
   - bash <(curl -s https://codecov.io/bash)
