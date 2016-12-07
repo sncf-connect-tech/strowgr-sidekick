@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/voyages-sncf-technologies/strowgr-sidekick.svg?branch=0.2.x)](https://travis-ci.org/voyages-sncf-technologies/strowgr-sidekick) [![GitHub release](https://img.shields.io/github/release/voyages-sncf-technologies/strowgr-sidekick.svg)](https://github.com/voyages-sncf-technologies/strowgr-sidekick/releases/latest) [![Coverage Status](https://coveralls.io/repos/github/voyages-sncf-technologies/strowgr-sidekick/badge.svg)](https://coveralls.io/github/voyages-sncf-technologies/strowgr-sidekick)
+[![Build Status](https://travis-ci.org/voyages-sncf-technologies/strowgr-sidekick.svg?branch=0.2.x)](https://travis-ci.org/voyages-sncf-technologies/strowgr-sidekick) [![GitHub release](https://img.shields.io/github/release/voyages-sncf-technologies/strowgr-sidekick.svg)](https://github.com/voyages-sncf-technologies/strowgr-sidekick/releases/latest) [![Coverage Status](https://coveralls.io/repos/github/voyages-sncf-technologies/strowgr-sidekick/badge.svg)](https://coveralls.io/github/voyages-sncf-technologies/strowgr-sidekick) [![codecov](https://codecov.io/gh/voyages-sncf-technologies/strowgr-sidekick/branch/0.2.x/graph/badge.svg)](https://codecov.io/gh/voyages-sncf-technologies/strowgr-sidekick)
+
 
 # Build
 
