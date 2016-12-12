@@ -1,19 +1,19 @@
-/*
- *  Copyright (C) 2016 VSCT
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- */
+//
+// Copyright (C) 2016 VSCT
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//  http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//
 package main
 
 import (
@@ -50,14 +50,25 @@ var (
 	lastSyslogReload = time.Now()
 	haFactory        *sidekick.LoadbalancerFactory
 
-	Version, GitCommit, GitBranch, GitState, GitSummary, BuildDate string
+	// Version of application
+	Version string
+	// GitCommit hash
+	GitCommit string
+	// GitBranch built branch
+	GitBranch string
+	// GitState dirty or clean
+	GitState string
+	// GitSummary git summary
+	GitSummary string
+	// BuildDate date of build
+	BuildDate string
 )
 
-type SdkLogger struct {
+type sdkLogger struct {
 	logrus *log.Logger
 }
 
-func (sdkLogger SdkLogger) Output(calldepth int, s string) error {
+func (sdkLogger sdkLogger) Output(calldepth int, s string) error {
 	log.WithField("type", "nsq driver").Info(s)
 	return nil
 }
@@ -67,7 +78,7 @@ func main() {
 	flag.Parse()
 
 	if *logCompact {
-		log.SetFormatter(&CompactFormatter{})
+		log.SetFormatter(&compactFormatter{})
 	} else {
 		log.SetFormatter(&log.TextFormatter{})
 	}
@@ -101,18 +112,18 @@ func main() {
 	nsqlogger := log.New()
 	nsqlogger.Formatter = log.StandardLogger().Formatter
 	nsqlogger.Level = log.WarnLevel
-	producer.SetLogger(SdkLogger{logrus: nsqlogger}, nsq.LogLevelWarning)
+	producer.SetLogger(sdkLogger{logrus: nsqlogger}, nsq.LogLevelWarning)
 
 	createTopicsAndChannels()
 	time.Sleep(1 * time.Second)
 
 	var wg sync.WaitGroup
 	// Start http API
-	restApi := sidekick.NewRestApi(properties)
+	restAPI := sidekick.NewRestApi(properties)
 	go func() {
 		defer wg.Done()
 		wg.Add(1)
-		err := restApi.Start()
+		err := restAPI.Start()
 		if err != nil {
 			log.Fatal("Cannot start api")
 		}
@@ -124,7 +135,7 @@ func main() {
 		wg.Add(1)
 		consumer, _ := nsq.NewConsumer(fmt.Sprintf("delete_requested_%s", properties.ClusterId), properties.Id, config)
 		log.WithField("topic", "delete_requested_"+properties.ClusterId).Debug("add topic consumer")
-		consumer.SetLogger(SdkLogger{logrus: nsqlogger}, nsq.LogLevelWarning)
+		consumer.SetLogger(sdkLogger{logrus: nsqlogger}, nsq.LogLevelWarning)
 		consumer.AddHandler(nsq.HandlerFunc(onDeleteRequested))
 		err := consumer.ConnectToNSQLookupds(properties.LookupdAddresses)
 		if err != nil {
@@ -138,7 +149,7 @@ func main() {
 		wg.Add(1)
 		consumer, _ := nsq.NewConsumer(fmt.Sprintf("commit_requested_%s", properties.ClusterId), properties.Id, config)
 		log.WithField("topic", "commit_requested_"+properties.ClusterId).Debug("add topic consumer")
-		consumer.SetLogger(SdkLogger{logrus: nsqlogger}, nsq.LogLevelWarning)
+		consumer.SetLogger(sdkLogger{logrus: nsqlogger}, nsq.LogLevelWarning)
 		consumer.AddHandler(nsq.HandlerFunc(onCommitRequested))
 		err := consumer.ConnectToNSQLookupds(properties.LookupdAddresses)
 		if err != nil {
@@ -152,7 +163,7 @@ func main() {
 		wg.Add(1)
 		consumer, _ := nsq.NewConsumer(fmt.Sprintf("commit_slave_completed_%s", properties.ClusterId), properties.Id, config)
 		log.WithField("topic", "commit_slave_completed_"+properties.ClusterId).Debug("add topic consumer")
-		consumer.SetLogger(SdkLogger{logrus: nsqlogger}, nsq.LogLevelWarning)
+		consumer.SetLogger(sdkLogger{logrus: nsqlogger}, nsq.LogLevelWarning)
 		consumer.AddHandler(nsq.HandlerFunc(onCommitSlaveRequested))
 		err := consumer.ConnectToNSQLookupds(properties.LookupdAddresses)
 		if err != nil {
@@ -168,7 +179,7 @@ func main() {
 		consumer.AddHandler(nsq.HandlerFunc(onCommitCompleted))
 		log.WithField("topic", "commit_completed_"+properties.ClusterId).Debug("add topic consumer")
 		err := consumer.ConnectToNSQLookupds(properties.LookupdAddresses)
-		consumer.SetLogger(SdkLogger{logrus: nsqlogger}, nsq.LogLevelWarning)
+		consumer.SetLogger(sdkLogger{logrus: nsqlogger}, nsq.LogLevelWarning)
 		if err != nil {
 			log.Panic("Could not connect")
 		}
@@ -198,7 +209,7 @@ func main() {
 		log.Printf("Got signal: %v\n", signal)
 	}
 	stopChan <- true
-	restApi.Stop()
+	restAPI.Stop()
 
 	log.Printf("Waiting on server to stop\n")
 	wg.Wait()
@@ -301,9 +312,8 @@ func reloadSlave(data *sidekick.EventMessageWithConf) error {
 	if isMaster && !*mono {
 		log.Debug("skipped message because server is master and not mono instance")
 		return nil
-	} else {
-		return reloadHaProxy(data, false)
 	}
+	return reloadHaProxy(data, false)
 }
 
 func reloadMaster(data *sidekick.EventMessageWithConf) error {
@@ -314,9 +324,8 @@ func reloadMaster(data *sidekick.EventMessageWithConf) error {
 	if isMaster {
 		log.Debug("skipped message because server is slave")
 		return reloadHaProxy(data, true)
-	} else {
-		return nil
 	}
+	return nil
 }
 
 func deleteHaproxy(data *sidekick.EventMessageWithConf) error {
@@ -365,9 +374,9 @@ func bodyToData(jsonStream []byte) (*sidekick.EventMessageWithConf, error) {
 	return &message, err
 }
 
-func publishMessage(topic_prefix string, data interface{}, context sidekick.Context) error {
+func publishMessage(topicPrefix string, data interface{}, context sidekick.Context) error {
 	jsonMsg, _ := json.Marshal(data)
-	topic := topic_prefix + properties.ClusterId
+	topic := topicPrefix + properties.ClusterId
 	if *logCompact {
 		context.Fields(log.Fields{"topic": topic}).Debug("publish on topic")
 	} else {
@@ -378,11 +387,11 @@ func publishMessage(topic_prefix string, data interface{}, context sidekick.Cont
 
 // log formatter
 
-type CompactFormatter struct {
+type compactFormatter struct {
 }
 
-func (f *CompactFormatter) Format(entry *log.Entry) ([]byte, error) {
-	var keys []string = make([]string, 0, len(entry.Data))
+func (f *compactFormatter) Format(entry *log.Entry) ([]byte, error) {
+	var keys = make([]string, 0, len(entry.Data))
 
 	b := &bytes.Buffer{}
 
