@@ -50,7 +50,7 @@ func TestReloadFails(t *testing.T) {
 func TestCreateDirectory(t *testing.T) {
 	// given & test
 	initContext()
-	hap := NewHaproxy(&Config{HapHome: "/HOME"}, Context{Application: "TST", Platform: "DEV"})
+	hap := NewHaproxy(&Config{HapHome: "/HOME"}, &Context{Application: "TST", Platform: "DEV"})
 
 	// check
 	check(t, "actual directory path: %s, expected: %s", hap.Filesystem.Application.Config, join("/HOME", "TST", "Config"))
@@ -65,7 +65,7 @@ func TestCreateDirectory(t *testing.T) {
 func TestArchivePath(t *testing.T) {
 	// given
 	initContext()
-	hap := NewHaproxy(&Config{HapHome: "/HOME"}, Context{Application: "TST", Platform: "DEV"})
+	hap := NewHaproxy(&Config{HapHome: "/HOME"}, &Context{Application: "TST", Platform: "DEV"})
 
 	// test & check
 	result := hap.Filesystem.Files.ConfigArchive
@@ -129,7 +129,24 @@ func TestUnchangedConfiguration(t *testing.T) {
 	// given
 	checkError(t, err)
 	check(t, "expected result is %s but actually got %s", UNCHANGED, result)
-	check(t, "actual command %s should be empty but got %s", "ps -p 1234", context.Command)
+	check(t, "actual command %s should be %s but got %s", "ps -p 1234", context.Command)
+}
+
+func TestUnchangedConfigurationWithEmptyPID(t *testing.T) {
+	// given
+	initContext()
+	hap :=  newMockHaproxyWithArgs(Config{HapHome:"/HOME"},Context{Application:"TST",Platform:"EMPTY"})
+	conf := Conf{Version: "1"}
+	conf.Haproxy = []byte("my conf")
+	event := &EventMessageWithConf{Conf: conf}
+
+	// test
+	result, err := hap.ApplyConfiguration(event)
+
+	// given
+	checkError(t, err)
+	check(t, "expected result is %s but actually got %s",SUCCESS, result)
+	check(t, "reload command is wrong. actual: '%s', expected: '%s'", context.Command, join("/HOME", "TST", "scripts", "hapTSTEMPTY")+" -f "+join("/HOME", "TST", "Config", "hapTSTEMPTY.conf")+" -p "+join("/HOME", "TST", "logs", "TSTEMPTY", "haproxy.pid"))
 }
 
 func TestChangedConfiguration(t *testing.T) {

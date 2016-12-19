@@ -32,7 +32,7 @@ import (
 // Haproxy manager for a given Application/Platform
 type Haproxy struct {
 	Config     *Config    // config of sidekick
-	Context    Context    // context of this haproxy (current application/platform/correlationid etc...)
+	Context    *Context    // context of this haproxy (current application/platform/correlationid etc...)
 	Filesystem Filesystem // filesystem with haproxy configuration files
 	Command    Command    // wrapping os command execution
 	Dumper     Dumper     // wrapping for dumping contents on files
@@ -40,7 +40,7 @@ type Haproxy struct {
 }
 
 // create a new haproxy
-func NewHaproxy(config *Config, context Context) *Haproxy {
+func NewHaproxy(config *Config, context *Context) *Haproxy {
 	// TODO manage a cache of Haproxy
 	return &Haproxy{
 		Config:     config,
@@ -88,7 +88,7 @@ func (hap *Haproxy) ApplyConfiguration(event *EventMessageWithConf) (status int,
 	hap.validate(event)
 
 	// create skeleton of directories
-	fs.Mkdirs(hap.Context)
+	fs.Mkdirs(*hap.Context)
 
 	// dump received haproxy configuration in verbose mode
 	hap.dumpDebug(event.Conf.Haproxy)
@@ -103,11 +103,11 @@ func (hap *Haproxy) ApplyConfiguration(event *EventMessageWithConf) (status int,
 
 		if bytes.Equal(oldConf, event.Conf.Haproxy) && string(oldVersion) == event.Conf.Version {
 			// check and restart killed haproxy
-			hap.restart_killed_haproxy()
-
-			// unchanged configuration file
-			hap.Context.Fields(log.Fields{"id": hap.Config.Id}).Debug("unchanged configuration")
-			return UNCHANGED, nil
+			if err:=hap.restart_killed_haproxy(); err==nil {
+				// unchanged configuration file
+				hap.Context.Fields(log.Fields{"id": hap.Config.Id}).Debug("unchanged configuration")
+				return UNCHANGED, nil
+			}
 		}
 
 		// Archive previous configuration
@@ -154,9 +154,12 @@ func (hap *Haproxy) restart_killed_haproxy() error {
 	cmd := fs.Commands
 	if cmd.Exists(fs.Files.PidFile) {
 		pid, err := cmd.Reader(fs.Files.PidFile, true)
-		if err != nil || pid == nil || len(pid) == 0 {
+		if err != nil { 
 			hap.Context.Fields(log.Fields{"pid path": fs.Files.PidFile, "pid": pid}).Error("can't read pid file")
 			return err
+		} else if pid == nil || len(pid) == 0 {
+                        cmd.Remover(fs.Files.PidFile,false)
+			return errors.New("pid file is empty")
 		}
 
 		if output, err := hap.Command("ps", "-p", strings.TrimSpace(string(pid))); err == nil {
@@ -220,13 +223,13 @@ func (hap *Haproxy) isManagedVersion(version string) bool {
 // dump configuration to dump directory if debug level is enabled
 func (hap *Haproxy) dumpDebug(config []byte) {
 	if log.GetLevel() == log.DebugLevel {
-		hap.Dumper(hap.Context, hap.Filesystem.Platform.Dump+"/"+time.Now().Format("20060102150405")+".log", config)
+		hap.Dumper(*hap.Context, hap.Filesystem.Platform.Dump+"/"+time.Now().Format("20060102150405")+".log", config)
 	}
 }
 
 // dump configuration to error directory
 func (hap *Haproxy) dumpError(config []byte) {
-	hap.Dumper(hap.Context, hap.Filesystem.Platform.Errors+"/"+time.Now().Format("20060102150405")+".log", config)
+	hap.Dumper(*hap.Context, hap.Filesystem.Platform.Errors+"/"+time.Now().Format("20060102150405")+".log", config)
 }
 
 // reload calls external shell script to reload haproxy
@@ -236,6 +239,7 @@ func (hap *Haproxy) reload(correlationId string) error {
 	cmd := fs.Commands
 	configurationExists := cmd.Exists(fs.Files.PidFile)
 	if configurationExists {
+		hap.Context.Fields(log.Fields{}).Info("Configuration exists!!!!!!!!!!!!")
 		pid, err := cmd.Reader(fs.Files.PidFile, true)
 		if err != nil || pid == nil || len(pid) == 0 {
 			hap.Context.Fields(log.Fields{"pid path": fs.Files.PidFile, "pid": pid}).Error("can't read pid file")
