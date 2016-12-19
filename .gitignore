@@ -6,3 +6,5 @@ haproxy-default-name.conf*
 
 /test/hapadm/OCE/Config
 version-1
+src/github.com
+src/golang.org
