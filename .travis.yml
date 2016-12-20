@@ -21,6 +21,6 @@ deploy:
   on:
     tags: true      
     repo: voyages-sncf-technologies/strowgr-sidekick
-    branch: 0.2.x
+    branch: master
 after_success:
   - bash <(curl -s https://codecov.io/bash)
