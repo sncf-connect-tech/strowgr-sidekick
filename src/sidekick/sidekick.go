@@ -330,7 +330,7 @@ func reloadMaster(data *sidekick.EventMessageWithConf) error {
 
 func deleteHaproxy(data *sidekick.EventMessageWithConf) error {
 	context := data.Context()
-	hap := sidekick.NewHaproxy(properties, context)
+	hap := sidekick.NewHaproxy(properties, &context)
 	err := hap.Stop()
 	if err != nil {
 		return err
