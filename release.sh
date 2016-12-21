@@ -1,5 +1,6 @@
 #!/bin/bash 
 
+git checkout master
 echo $1 > VERSION
 git add VERSION
 git commit -m "[release] $1"
