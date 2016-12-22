@@ -3,7 +3,7 @@
 git checkout master
 echo $1 > VERSION
 git add VERSION
-git commit -m "[release] $1"
+git commit -m "[release] v$1"
 git push 
-git tag $1
+git tag "v$1"
 git push --tags
