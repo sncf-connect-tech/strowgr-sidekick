@@ -26,6 +26,7 @@ import (
 	"github.com/bitly/go-nsq"
 	"net/http"
 	"os"
+	"runtime"
 	"os/signal"
 	sidekick "sidekick/internal"
 	"sort"
@@ -108,6 +109,12 @@ func main() {
 		"clusterId": properties.ClusterId,
 	}).Info("Starting sidekick")
 
+	config.Set("concurrency", runtime.GOMAXPROCS(runtime.NumCPU()))
+	config.Set("max_in_flight",6)
+	if err := config.Validate(); err!=nil {
+		panic(err)
+	}
+
 	producer, _ = nsq.NewProducer(properties.ProducerAddr, config)
 	nsqlogger := log.New()
 	nsqlogger.Formatter = log.StandardLogger().Formatter
@@ -136,7 +143,7 @@ func main() {
 		consumer, _ := nsq.NewConsumer(fmt.Sprintf("delete_requested_%s", properties.ClusterId), properties.Id, config)
 		log.WithField("topic", "delete_requested_"+properties.ClusterId).Debug("add topic consumer")
 		consumer.SetLogger(sdkLogger{logrus: nsqlogger}, nsq.LogLevelWarning)
-		consumer.AddHandler(nsq.HandlerFunc(onDeleteRequested))
+		consumer.AddConcurrentHandlers(nsq.HandlerFunc(onDeleteRequested),6)
 		err := consumer.ConnectToNSQLookupds(properties.LookupdAddresses)
 		if err != nil {
 			log.Panic("Could not connect")
@@ -150,7 +157,7 @@ func main() {
 		consumer, _ := nsq.NewConsumer(fmt.Sprintf("commit_requested_%s", properties.ClusterId), properties.Id, config)
 		log.WithField("topic", "commit_requested_"+properties.ClusterId).Debug("add topic consumer")
 		consumer.SetLogger(sdkLogger{logrus: nsqlogger}, nsq.LogLevelWarning)
-		consumer.AddHandler(nsq.HandlerFunc(onCommitRequested))
+		consumer.AddConcurrentHandlers(nsq.HandlerFunc(onCommitRequested),6)
 		err := consumer.ConnectToNSQLookupds(properties.LookupdAddresses)
 		if err != nil {
 			log.Panic("Could not connect")
@@ -164,7 +171,7 @@ func main() {
 		consumer, _ := nsq.NewConsumer(fmt.Sprintf("commit_slave_completed_%s", properties.ClusterId), properties.Id, config)
 		log.WithField("topic", "commit_slave_completed_"+properties.ClusterId).Debug("add topic consumer")
 		consumer.SetLogger(sdkLogger{logrus: nsqlogger}, nsq.LogLevelWarning)
-		consumer.AddHandler(nsq.HandlerFunc(onCommitSlaveRequested))
+		consumer.AddConcurrentHandlers(nsq.HandlerFunc(onCommitSlaveRequested),6)
 		err := consumer.ConnectToNSQLookupds(properties.LookupdAddresses)
 		if err != nil {
 			log.Panic("Could not connect")
@@ -176,7 +183,7 @@ func main() {
 		defer wg.Done()
 		wg.Add(1)
 		consumer, _ := nsq.NewConsumer(fmt.Sprintf("commit_completed_%s", properties.ClusterId), properties.Id, config)
-		consumer.AddHandler(nsq.HandlerFunc(onCommitCompleted))
+		consumer.AddConcurrentHandlers(nsq.HandlerFunc(onCommitCompleted),6)
 		log.WithField("topic", "commit_completed_"+properties.ClusterId).Debug("add topic consumer")
 		err := consumer.ConnectToNSQLookupds(properties.LookupdAddresses)
 		consumer.SetLogger(sdkLogger{logrus: nsqlogger}, nsq.LogLevelWarning)
