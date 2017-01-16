@@ -23,6 +23,12 @@ GitBranch: nomaven
 GitState: dirty
 ```
 
+# Build with docker container
+```bash
+docker build -f Dockerfile.build -t strowgr/sidekick-builder:$(cat VERSION) .
+docker run -v $PWD:/go -v $PWD:/bin strowgr/sidekick-builder:$(cat VERSION)
+```
+Binary is generated here: ```./sidekick```.
 
 # Run
 
