@@ -28,7 +28,7 @@ deploy:
   - provider: script
     skip_cleanup: true
     script: cp sidekick-$(cat VERSION) sidekick && docker build -t strowgr/sidekick:$(cat VERSION) . && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" && docker push strowgr/sidekick:$(cat VERSION)
-#    on:
-#      tags: true
+    on:
+      tags: true
 after_success:
   - bash <(curl -s https://codecov.io/bash)
