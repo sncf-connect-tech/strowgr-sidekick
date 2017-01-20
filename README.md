@@ -30,6 +30,11 @@ docker run -v $PWD:/go -v $PWD:/bin strowgr/sidekick-builder:$(cat VERSION)
 ```
 Binary is generated here: ```./sidekick```.
 
+# Build docker image with haproxy instances
+```bash
+docker build -t strowgr/sidekick:$(cat VERSION) .
+```
+
 # Run
 
 
