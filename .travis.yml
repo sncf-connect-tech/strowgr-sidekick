@@ -17,6 +17,8 @@ script:
   - ./sidekick-$(cat ./VERSION) -version
   - go test -coverprofile=coverage.txt -covermode=count sidekick/internal
   - $HOME/gopath/bin/goveralls -service=travis-ci -package=sidekick/internal -coverprofile=coverage.txt -repotoken $COVERALLS_TOKEN
+install:
+  - export GOPATH="${TRAVIS_BUILD_DIR}"
 deploy:
   - provider: releases
     api_key:
