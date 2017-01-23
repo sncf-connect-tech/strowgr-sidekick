@@ -30,5 +30,6 @@ deploy:
     script: cp sidekick-$(cat VERSION) sidekick && docker build -t strowgr/sidekick:$(cat VERSION) . && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" && docker push strowgr/sidekick:$(cat VERSION)
     on:
       tags: true
+      branch: master
 after_success:
   - bash <(curl -s https://codecov.io/bash)
