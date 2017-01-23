@@ -22,4 +22,5 @@ git commit -m "[release] v${VERSION}"
 git checkout master
 git merge "${VERSION}"
 git tag "v${VERSION}"
-git push --all
+git push origin master
+git push --tags
