@@ -1,4 +1,4 @@
-FROM dockerregistry.socrate.vsct.fr/golang:1.7
+FROM golang:1.7
 
 VOLUME /go
 VOLUME /bin
