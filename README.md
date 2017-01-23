@@ -43,3 +43,17 @@ Usage of ./sidekick:
   -version
     	Print current version
 ```
+
+# Release
+
+For a release branch created like this:
+
+```bash
+git checkout -b 0.1.0 develop
+```
+
+Execute following command to create a release:
+
+```bash
+./release.sh 0.1.0
+```
