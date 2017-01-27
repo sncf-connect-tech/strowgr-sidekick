@@ -40,6 +40,7 @@ var (
 	version          = flag.Bool("version", false, "Print current version")
 	verbose          = flag.Bool("verbose", false, "Log in verbose mode")
 	logCompact       = flag.Bool("log-compact", false, "compacting log")
+	generateConfig   = flag.Bool("generate-config", false, "generate a default config file")
 	mono             = flag.Bool("mono", false, "only one haproxy instance which play slave/master roles.")
 	fake             = flag.String("fake", "", "Force response without reload for testing purpose. 'yesman': always say ok, 'drunk': random status/errors for entrypoint updates. Just for test purpose.")
 	config           = nsq.NewConfig()
@@ -75,8 +76,36 @@ func (sdkLogger sdkLogger) Output(calldepth int, s string) error {
 }
 
 func main() {
-	fmt.Printf("Version: %s\nBuild date: %s\nGitCommit: %s\nGitBranch: %s\nGitState: %s\nGitSummary: %s\n", Version, BuildDate, GitCommit, GitBranch, GitState, GitSummary)
 	flag.Parse()
+
+	if *generateConfig {
+		defaultConfigOut := new(bytes.Buffer)
+		hapInstallation1422 := sidekick.HapInstallation{
+			Path: "/export/product/haproxy/product/1.4.22",
+		}
+		hapInstallation1511 := sidekick.HapInstallation{
+			Path: "/export/product/haproxy/product/1.5.11",
+		}
+		hapInstallations := make(map[string]sidekick.HapInstallation)
+		hapInstallations["1.4.22"] = hapInstallation1422
+		hapInstallations["1.5.11"] = hapInstallation1511
+
+		defaultConfigIn := &sidekick.Config{
+			ClusterId:        "local",
+			ProducerAddr:     "localhost:4150",
+			ProducerRestAddr: "http://localhost:4151",
+			Port:             50000,
+			HapHome:          "/HOME/hapadm",
+			LookupdAddresses: []string{"localhost:4161","localhost:4162"},
+			Id:               "hostname",
+			Hap:              hapInstallations,
+		}
+		toml.NewEncoder(defaultConfigOut).Encode(defaultConfigIn)
+		fmt.Println(defaultConfigOut.String())
+		os.Exit(0)
+	}
+
+	fmt.Printf("Version: %s\nBuild date: %s\nGitCommit: %s\nGitBranch: %s\nGitState: %s\nGitSummary: %s\n", Version, BuildDate, GitCommit, GitBranch, GitState, GitSummary)
 
 	if *logCompact {
 		log.SetFormatter(&compactFormatter{})
@@ -258,9 +287,9 @@ func loadProperties() {
 		log.Fatal(err)
 		os.Exit(1)
 	}
-	len := len(properties.HapHome)
-	if properties.HapHome[len-1] == '/' {
-		properties.HapHome = properties.HapHome[:len-1]
+	length := len(properties.HapHome)
+	if properties.HapHome[length - 1] == '/' {
+		properties.HapHome = properties.HapHome[:length - 1]
 	}
 }
 
