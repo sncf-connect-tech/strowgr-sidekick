@@ -34,8 +34,10 @@ Usage of ./sidekick:
     	Configuration file (default "sidekick.conf")
   -fake string
     	Force response without reload for testing purpose. 'yesman': always say ok, 'drunk': random status/errors for entrypoint updates. Just for test purpose.
+  -generate-config
+    	generate a default config file to the standard output
   -log-compact
-    	compacting log
+    	compacting log format
   -mono
     	only one haproxy instance which play slave/master roles.
   -verbose

@@ -36,7 +36,6 @@ type Config struct {
 	Port             int32
 	HapHome          string
 	Id               string
-	Status           string
 	Hap              map[string]HapInstallation
 }
 
@@ -102,12 +101,12 @@ func (eventMessage EventMessageWithConf) CloneWithConf(source string) EventMessa
 }
 
 // retrieve Context from an EventMessage
-func (em EventMessage) Context() Context {
+func (eventMessage EventMessage) Context() Context {
 	return Context{
-		CorrelationId: em.Header.CorrelationId,
-		Timestamp:     em.Header.Timestamp,
-		Application:   em.Header.Application,
-		Platform:      em.Header.Platform,
+		CorrelationId: eventMessage.Header.CorrelationId,
+		Timestamp:     eventMessage.Header.Timestamp,
+		Application:   eventMessage.Header.Application,
+		Platform:      eventMessage.Header.Platform,
 	}
 }
 
