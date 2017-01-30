@@ -6,15 +6,17 @@ go:
   - 1.7
 before_install:
   - go get github.com/mattn/goveralls
+  - go get github.com/ahmetalpbalkan/govvv
+install:
+  - export GOPATH="${TRAVIS_BUILD_DIR}"
 before_script:
   - go vet sidekick
   - go test sidekick
 script:
-  - go build -o "sidekick-$(cat VERSION)" -ldflags "-X main.Version=$(cat VERSION) -X GitCommit=$(git rev-parse --short HEAD) -X GitBranch=$(git rev-parse --abbrev-ref HEAD)" sidekick
+  - $HOME/gopath/bin/govvv build -o "sidekick-$(cat VERSION)" sidekick
+  - ./sidekick-$(cat ./VERSION) -version
   - go test -coverprofile=coverage.txt -covermode=count sidekick/internal
   - $HOME/gopath/bin/goveralls -service=travis-ci -package=sidekick/internal -coverprofile=coverage.txt -repotoken $COVERALLS_TOKEN
-install:
-  - export GOPATH="${TRAVIS_BUILD_DIR}"
 deploy:
   - provider: releases
     api_key:
