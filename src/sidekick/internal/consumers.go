@@ -3,6 +3,7 @@ package internal
 import (
 	"github.com/bitly/go-nsq"
 	log "github.com/Sirupsen/logrus"
+	"time"
 )
 
 type Consumer struct {
@@ -43,8 +44,20 @@ func (consumers Consumers) RestartConsumers() {
 	for _, consumer := range consumers.consumers {
 		log.WithField("topic", consumer.topic).Info("stop nsq consumer")
 		consumer.nsq.Stop()
-		// waiting for NSQ stop
-		<-consumer.nsq.StopChan
+		// waiting for NSQ stop with 5 seconds of timeout
+		timeout := time.Tick(5 * time.Second)
+		stop := false
+		for !stop {
+			select {
+			case <-consumer.nsq.StopChan:
+			case <-timeout:
+				log.WithField("topic", consumer.topic).Warn("timeout on close consumer")
+				stop = true
+				break
+			default:
+				time.Sleep(100 * time.Millisecond)
+			}
+		}
 		// start a new consumer with the same topic and the same handler
 		consumers.PutAndStartConsumer(consumer.topic, consumer.handler)
 		log.WithField("topic", consumer.topic).Info("consumer on this topic has been restarted")
