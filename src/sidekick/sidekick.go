@@ -33,6 +33,7 @@ import (
 	"sync"
 	"syscall"
 	"time"
+	"strconv"
 )
 
 var (
@@ -47,8 +48,8 @@ var (
 	properties       *sidekick.Config
 	producer         *nsq.Producer
 	syslog           *sidekick.Syslog
-	reloadChan       = make(chan sidekick.ReloadEvent)
-	deleteChan       = make(chan sidekick.ReloadEvent)
+	reloadChan       = make(chan sidekick.ReloadEvent, 100)
+	deleteChan       = make(chan sidekick.ReloadEvent, 100)
 	lastSyslogReload = time.Now()
 	haFactory        *sidekick.LoadbalancerFactory
 
@@ -258,10 +259,14 @@ func filteredHandler(event string, message *nsq.Message, f sidekick.HandlerFunc)
 	switch event {
 	case "delete_requested":
 		deleteChan <- sidekick.ReloadEvent{F: f, Message: data}
-	case "commit_requested":
-		reloadChan <- sidekick.ReloadEvent{F: f, Message: data}
-	case "commit_slave_completed":
-		reloadChan <- sidekick.ReloadEvent{F: f, Message: data}
+	case "commit_requested", "commit_slave_completed":
+		// select is here for a non-blocking send on channel in order to dropping messages when channel is full
+		select {
+		case reloadChan <- sidekick.ReloadEvent{F: f, Message: data}:
+			log.WithFields(log.Fields{"event":event, "nsq id":message.ID, "channel length":strconv.Itoa(len(reloadChan)), "channel capacity":strconv.Itoa(cap(reloadChan))}).Debug("push event to reload channel")
+		default:
+			log.WithFields(log.Fields{"event":event, "nsq id":message.ID, "channel length":strconv.Itoa(len(reloadChan)), "channel capacity":strconv.Itoa(cap(reloadChan))}).Warn("dropped event, can't push it to reload channel.")
+		}
 	case "commit_completed":
 		f(data)
 	}
@@ -327,8 +332,7 @@ func reloadHaProxy(data *sidekick.EventMessageWithConf, masterRole bool) error {
 	context := data.Context()
 	var hap sidekick.Loadbalancer
 	hap = haFactory.CreateHaproxy(context)
-	status, err := hap.ApplyConfiguration(data)
-	if err == nil {
+	if status, err := hap.ApplyConfiguration(data); err == nil {
 		if status != sidekick.UNCHANGED {
 			elapsed := time.Now().Sub(lastSyslogReload)
 			if elapsed.Seconds() > 10 {
