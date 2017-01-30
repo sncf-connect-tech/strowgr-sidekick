@@ -161,3 +161,12 @@ type HandlerFunc func(data *EventMessageWithConf) error
 func (h HandlerFunc) HandleMessage(m *EventMessageWithConf) error {
 	return h(m)
 }
+
+type SdkLogger struct {
+	Logrus *log.Logger
+}
+
+func (sdkLogger SdkLogger) Output(calldepth int, s string) error {
+	log.WithField("type", "nsq driver").Info(s)
+	return nil
+}

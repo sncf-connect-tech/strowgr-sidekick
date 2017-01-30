@@ -31,7 +31,7 @@ import (
 
 // Haproxy manager for a given Application/Platform
 type Haproxy struct {
-	Config     *Config    // config of sidekick
+	Config     *Config    // nsqConfig of sidekick
 	Context    *Context    // context of this haproxy (current application/platform/correlationid etc...)
 	Filesystem Filesystem // filesystem with haproxy configuration files
 	Command    Command    // wrapping os command execution
@@ -94,7 +94,7 @@ func (hap *Haproxy) ApplyConfiguration(event *EventMessageWithConf) (status int,
 	hap.dumpDebug(event.Conf.Haproxy)
 
 	if cmd.Exists(fs.Files.ConfigFile) {
-		hap.Context.Fields(log.Fields{"config": fs.Files.ConfigFile}).Debug("configuration file found")
+		hap.Context.Fields(log.Fields{"nsqConfig": fs.Files.ConfigFile}).Debug("configuration file found")
 
 		// configuration already exists for this haproxy
 		oldConf, _ := cmd.Reader(fs.Files.ConfigFile, true)
@@ -154,7 +154,7 @@ func (hap *Haproxy) restart_killed_haproxy() error {
 	cmd := fs.Commands
 	if cmd.Exists(fs.Files.PidFile) {
 		pid, err := cmd.Reader(fs.Files.PidFile, true)
-		if err != nil { 
+		if err != nil {
 			hap.Context.Fields(log.Fields{"pid path": fs.Files.PidFile, "pid": pid}).Error("can't read pid file")
 			return err
 		} else if pid == nil || len(pid) == 0 {
@@ -271,15 +271,15 @@ func (hap *Haproxy) rollback(correlationId string) error {
 	cmd := fs.Commands
 
 	if err := cmd.Renamer(fs.Files.ConfigArchive, fs.Files.ConfigFile, false); err != nil {
-		hap.Context.Fields(log.Fields{"archived config": fs.Files.ConfigArchive, "used config": fs.Files.ConfigFile}).WithError(err).Error("can't rename config archive to used config path")
+		hap.Context.Fields(log.Fields{"archived nsqConfig": fs.Files.ConfigArchive, "used nsqConfig": fs.Files.ConfigFile}).WithError(err).Error("can't rename nsqConfig archive to used nsqConfig path")
 		return err
 	} else if err = cmd.Renamer(fs.Files.VersionArchive, fs.Files.Version, false); err != nil {
-		hap.Context.Fields(log.Fields{"archived config": fs.Files.VersionArchive, "used config": fs.Files.Version}).WithError(err).Error("can't rename version archive to used version path")
+		hap.Context.Fields(log.Fields{"archived nsqConfig": fs.Files.VersionArchive, "used nsqConfig": fs.Files.Version}).WithError(err).Error("can't rename version archive to used version path")
 		return err
 	}
 
 	if originBinArchived, err := cmd.ReadLinker(fs.Files.BinaryArchive, false); err != nil {
-		hap.Context.Fields(log.Fields{"archived config": fs.Files.BinaryArchive}).WithError(err).Error("can't read origin of link to bin archive")
+		hap.Context.Fields(log.Fields{"archived nsqConfig": fs.Files.BinaryArchive}).WithError(err).Error("can't read origin of link to bin archive")
 		return err
 	} else {
 		if err = cmd.Linker(originBinArchived, fs.Files.Binary, false); err != nil {
@@ -306,7 +306,7 @@ func (hap *Haproxy) Delete() error {
 		}
 	}()
 
-	// remove bin and config files
+	// remove bin and nsqConfig files
 	cmd.Remover(fs.Files.ConfigArchive, false)
 	cmd.Remover(fs.Files.BinaryArchive, false)
 	cmd.Remover(fs.Files.ConfigFile, true)

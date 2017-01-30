@@ -33,6 +33,7 @@ import (
 	"sync"
 	"syscall"
 	"time"
+	"strconv"
 )
 
 var (
@@ -47,10 +48,12 @@ var (
 	properties       *sidekick.Config
 	producer         *nsq.Producer
 	syslog           *sidekick.Syslog
-	reloadChan       = make(chan sidekick.ReloadEvent)
-	deleteChan       = make(chan sidekick.ReloadEvent)
+	reloadChan       = make(chan sidekick.ReloadEvent, 100)
+	deleteChan       = make(chan sidekick.ReloadEvent, 100)
 	lastSyslogReload = time.Now()
 	haFactory        *sidekick.LoadbalancerFactory
+
+	consumers sidekick.Consumers
 
 	// Version of application
 	Version string
@@ -65,15 +68,6 @@ var (
 	// BuildDate date of build
 	BuildDate string
 )
-
-type sdkLogger struct {
-	logrus *log.Logger
-}
-
-func (sdkLogger sdkLogger) Output(calldepth int, s string) error {
-	log.WithField("type", "nsq driver").Info(s)
-	return nil
-}
 
 func main() {
 	flag.Parse()
@@ -96,7 +90,7 @@ func main() {
 			ProducerRestAddr: "http://localhost:4151",
 			Port:             50000,
 			HapHome:          "/HOME/hapadm",
-			LookupdAddresses: []string{"localhost:4161","localhost:4162"},
+			LookupdAddresses: []string{"localhost:4161", "localhost:4162"},
 			Id:               "hostname",
 			Hap:              hapInstallations,
 		}
@@ -139,85 +133,40 @@ func main() {
 	}).Info("Starting sidekick")
 
 	config.Set("concurrency", runtime.GOMAXPROCS(runtime.NumCPU()))
-	config.Set("max_in_flight",6)
-	if err := config.Validate(); err!=nil {
+	config.Set("max_in_flight", 6)
+	if err := config.Validate(); err != nil {
 		panic(err)
 	}
 
-	producer, _ = nsq.NewProducer(properties.ProducerAddr, config)
+	// create our own logger for nsq
 	nsqlogger := log.New()
 	nsqlogger.Formatter = log.StandardLogger().Formatter
 	nsqlogger.Level = log.WarnLevel
-	producer.SetLogger(sdkLogger{logrus: nsqlogger}, nsq.LogLevelWarning)
+	sdkLogger := sidekick.SdkLogger{Logrus: nsqlogger}
+
+	// producer nsq
+	producer, _ = nsq.NewProducer(properties.ProducerAddr, config)
+	producer.SetLogger(sdkLogger, nsq.LogLevelWarning)
 
 	createTopicsAndChannels()
 	time.Sleep(1 * time.Second)
 
+	// Start consumers
+	consumers = sidekick.NewConsumers(*properties, *config, sdkLogger)
+	consumers.PutAndStartConsumer(fmt.Sprintf("delete_requested_%s", properties.ClusterId), onDeleteRequested)
+	consumers.PutAndStartConsumer(fmt.Sprintf("commit_requested_%s", properties.ClusterId), onCommitRequested)
+	consumers.PutAndStartConsumer(fmt.Sprintf("commit_slave_completed_%s", properties.ClusterId), onCommitSlaveCompleted)
+	consumers.PutAndStartConsumer(fmt.Sprintf("commit_completed_%s", properties.ClusterId), onCommitCompleted)
+
 	var wg sync.WaitGroup
 	// Start http API
-	restAPI := sidekick.NewRestApi(properties)
+	restAPI := sidekick.NewRestApi(properties, consumers)
 	go func() {
 		defer wg.Done()
 		wg.Add(1)
 		err := restAPI.Start()
 		if err != nil {
 			log.Fatal("Cannot start api")
-		}
-	}()
-
-	// Start delete consumer
-	go func() {
-		defer wg.Done()
-		wg.Add(1)
-		consumer, _ := nsq.NewConsumer(fmt.Sprintf("delete_requested_%s", properties.ClusterId), properties.Id, config)
-		log.WithField("topic", "delete_requested_"+properties.ClusterId).Debug("add topic consumer")
-		consumer.SetLogger(sdkLogger{logrus: nsqlogger}, nsq.LogLevelWarning)
-		consumer.AddConcurrentHandlers(nsq.HandlerFunc(onDeleteRequested),6)
-		err := consumer.ConnectToNSQLookupds(properties.LookupdAddresses)
-		if err != nil {
-			log.Panic("Could not connect")
-		}
-	}()
-
-	// Start slave consumer
-	go func() {
-		defer wg.Done()
-		wg.Add(1)
-		consumer, _ := nsq.NewConsumer(fmt.Sprintf("commit_requested_%s", properties.ClusterId), properties.Id, config)
-		log.WithField("topic", "commit_requested_"+properties.ClusterId).Debug("add topic consumer")
-		consumer.SetLogger(sdkLogger{logrus: nsqlogger}, nsq.LogLevelWarning)
-		consumer.AddConcurrentHandlers(nsq.HandlerFunc(onCommitRequested),6)
-		err := consumer.ConnectToNSQLookupds(properties.LookupdAddresses)
-		if err != nil {
-			log.Panic("Could not connect")
-		}
-	}()
-
-	// Start master consumer
-	go func() {
-		defer wg.Done()
-		wg.Add(1)
-		consumer, _ := nsq.NewConsumer(fmt.Sprintf("commit_slave_completed_%s", properties.ClusterId), properties.Id, config)
-		log.WithField("topic", "commit_slave_completed_"+properties.ClusterId).Debug("add topic consumer")
-		consumer.SetLogger(sdkLogger{logrus: nsqlogger}, nsq.LogLevelWarning)
-		consumer.AddConcurrentHandlers(nsq.HandlerFunc(onCommitSlaveRequested),6)
-		err := consumer.ConnectToNSQLookupds(properties.LookupdAddresses)
-		if err != nil {
-			log.Panic("Could not connect")
-		}
-	}()
-
-	// Start complete consumer
-	go func() {
-		defer wg.Done()
-		wg.Add(1)
-		consumer, _ := nsq.NewConsumer(fmt.Sprintf("commit_completed_%s", properties.ClusterId), properties.Id, config)
-		consumer.AddConcurrentHandlers(nsq.HandlerFunc(onCommitCompleted),6)
-		log.WithField("topic", "commit_completed_"+properties.ClusterId).Debug("add topic consumer")
-		err := consumer.ConnectToNSQLookupds(properties.LookupdAddresses)
-		consumer.SetLogger(sdkLogger{logrus: nsqlogger}, nsq.LogLevelWarning)
-		if err != nil {
-			log.Panic("Could not connect")
 		}
 	}()
 
@@ -310,10 +259,14 @@ func filteredHandler(event string, message *nsq.Message, f sidekick.HandlerFunc)
 	switch event {
 	case "delete_requested":
 		deleteChan <- sidekick.ReloadEvent{F: f, Message: data}
-	case "commit_requested":
-		reloadChan <- sidekick.ReloadEvent{F: f, Message: data}
-	case "commit_slave_completed":
-		reloadChan <- sidekick.ReloadEvent{F: f, Message: data}
+	case "commit_requested", "commit_slave_completed":
+		// select is here for a non-blocking send on channel in order to dropping messages when channel is full
+		select {
+		case reloadChan <- sidekick.ReloadEvent{F: f, Message: data}:
+			log.WithFields(log.Fields{"event":event, "nsq id":message.ID, "channel length":strconv.Itoa(len(reloadChan)), "channel capacity":strconv.Itoa(cap(reloadChan))}).Debug("push event to reload channel")
+		default:
+			log.WithFields(log.Fields{"event":event, "nsq id":message.ID, "channel length":strconv.Itoa(len(reloadChan)), "channel capacity":strconv.Itoa(cap(reloadChan))}).Warn("dropped event, can't push it to reload channel.")
+		}
 	case "commit_completed":
 		f(data)
 	}
@@ -324,7 +277,7 @@ func filteredHandler(event string, message *nsq.Message, f sidekick.HandlerFunc)
 func onCommitRequested(message *nsq.Message) error {
 	return filteredHandler("commit_requested", message, reloadSlave)
 }
-func onCommitSlaveRequested(message *nsq.Message) error {
+func onCommitSlaveCompleted(message *nsq.Message) error {
 	return filteredHandler("commit_slave_completed", message, reloadMaster)
 }
 func onCommitCompleted(message *nsq.Message) error {
@@ -379,8 +332,7 @@ func reloadHaProxy(data *sidekick.EventMessageWithConf, masterRole bool) error {
 	context := data.Context()
 	var hap sidekick.Loadbalancer
 	hap = haFactory.CreateHaproxy(context)
-	status, err := hap.ApplyConfiguration(data)
-	if err == nil {
+	if status, err := hap.ApplyConfiguration(data); err == nil {
 		if status != sidekick.UNCHANGED {
 			elapsed := time.Now().Sub(lastSyslogReload)
 			if elapsed.Seconds() > 10 {

@@ -26,12 +26,14 @@ import (
 
 type RestApi struct {
 	properties *Config
+	consumers  Consumers
 	listener   *StoppableListener
 }
 
-func NewRestApi(properties *Config) *RestApi {
+func NewRestApi(properties *Config, consumers Consumers) *RestApi {
 	api := &RestApi{
 		properties: properties,
+		consumers:  consumers,
 	}
 	return api
 }
@@ -48,6 +50,12 @@ func (api *RestApi) Start() error {
 		} else {
 			fmt.Fprint(writer, "can't know if there is master")
 		}
+	})
+
+	sm.HandleFunc("/consumers/restart", func(writer http.ResponseWriter, request *http.Request) {
+		api.consumers.RestartConsumers()
+		fmt.Fprintln(writer, "consumer restarted")
+
 	})
 
 	listener, err := net.Listen("tcp4", fmt.Sprintf(":%d", api.properties.Port))
