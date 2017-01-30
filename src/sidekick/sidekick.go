@@ -150,9 +150,16 @@ func main() {
 	createTopicsAndChannels()
 	time.Sleep(1 * time.Second)
 
+	// Start consumers
+	consumers = sidekick.NewConsumers(*properties, *config, sdkLogger)
+	consumers.PutAndStartConsumer(fmt.Sprintf("delete_requested_%s", properties.ClusterId), onDeleteRequested)
+	consumers.PutAndStartConsumer(fmt.Sprintf("commit_requested_%s", properties.ClusterId), onCommitRequested)
+	consumers.PutAndStartConsumer(fmt.Sprintf("commit_slave_completed_%s", properties.ClusterId), onCommitSlaveCompleted)
+	consumers.PutAndStartConsumer(fmt.Sprintf("commit_completed_%s", properties.ClusterId), onCommitCompleted)
+
 	var wg sync.WaitGroup
 	// Start http API
-	restAPI := sidekick.NewRestApi(properties)
+	restAPI := sidekick.NewRestApi(properties, consumers)
 	go func() {
 		defer wg.Done()
 		wg.Add(1)
@@ -161,13 +168,6 @@ func main() {
 			log.Fatal("Cannot start api")
 		}
 	}()
-
-	// Start consumers
-	consumers = sidekick.NewConsumers(*properties, *config, sdkLogger)
-	consumers.AddAndStartConsumer(fmt.Sprintf("delete_requested_%s", properties.ClusterId), onDeleteRequested)
-	consumers.AddAndStartConsumer(fmt.Sprintf("commit_requested_%s", properties.ClusterId), onCommitRequested)
-	consumers.AddAndStartConsumer(fmt.Sprintf("commit_slave_completed_%s", properties.ClusterId), onCommitSlaveCompleted)
-	consumers.AddAndStartConsumer(fmt.Sprintf("commit_completed_%s", properties.ClusterId), onCommitCompleted)
 
 	// Start reload pipeline
 	stopChan := make(chan interface{}, 1)
