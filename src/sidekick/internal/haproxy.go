@@ -239,7 +239,7 @@ func (hap *Haproxy) reload(correlationId string) error {
 	cmd := fs.Commands
 	configurationExists := cmd.Exists(fs.Files.PidFile)
 	if configurationExists {
-		hap.Context.Fields(log.Fields{}).Info("Configuration exists!!!!!!!!!!!!")
+		hap.Context.Fields(log.Fields{}).Info("Configuration exists!")
 		pid, err := cmd.Reader(fs.Files.PidFile, true)
 		if err != nil || pid == nil || len(pid) == 0 {
 			hap.Context.Fields(log.Fields{"pid path": fs.Files.PidFile, "pid": pid}).Error("can't read pid file")

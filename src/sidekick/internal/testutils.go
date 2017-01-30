@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	"errors"
 	"os"
 	"strings"
@@ -51,9 +50,7 @@ func MockFailedCommand(name string, arg ...string) ([]byte, error) {
 
 func (mc MockCommands) Reader(path string, isPanic bool) ([]byte, error) {
 	if strings.HasSuffix(path, "pid") {
-		fmt.Printf("!!!!!!!!!!!!!!!path %s\n\n",path)
 		if strings.Contains(path,"EMPTY") {
-			fmt.Printf("!!!!!!!!!!!!!!!EMPTY %s\n\n",path)
 			return []byte(""), nil
 		} else {
 			return []byte("1234"), nil
