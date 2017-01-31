@@ -66,7 +66,7 @@ func (consumers Consumers) RestartConsumers() {
 
 // create a consumer with a given topic and handler
 func (consumers Consumers) createConsumer(topic string, handler func(message *nsq.Message) error) *nsq.Consumer {
-	if consumer, err := nsq.NewConsumer(topic, consumers.config.Id, &consumers.nsqConfig); err == nil {
+	if consumer, err := nsq.NewConsumer(topic, consumers.config.ID, &consumers.nsqConfig); err == nil {
 		consumer.SetLogger(consumers.sdkLogger, nsq.LogLevelWarning)
 
 		consumer.AddConcurrentHandlers(nsq.HandlerFunc(handler), 6)

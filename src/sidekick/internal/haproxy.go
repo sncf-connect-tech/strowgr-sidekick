@@ -105,7 +105,7 @@ func (hap *Haproxy) ApplyConfiguration(event *EventMessageWithConf) (status int,
 			// check and restart killed haproxy
 			if err:=hap.restart_killed_haproxy(); err==nil {
 				// unchanged configuration file
-				hap.Context.Fields(log.Fields{"id": hap.Config.Id}).Debug("unchanged configuration")
+				hap.Context.Fields(log.Fields{"id": hap.Config.ID}).Debug("unchanged configuration")
 				return UNCHANGED, nil
 			}
 		}
@@ -127,13 +127,13 @@ func (hap *Haproxy) ApplyConfiguration(event *EventMessageWithConf) (status int,
 
 	// write new configuration file
 	cmd.Writer(fs.Files.ConfigFile, event.Conf.Haproxy, 0644, true)
-	hap.Context.Fields(log.Fields{"id": hap.Config.Id, "path": fs.Files.ConfigFile}).Info("write received configuration (first time or detected changes)")
+	hap.Context.Fields(log.Fields{"id": hap.Config.ID, "path": fs.Files.ConfigFile}).Info("write received configuration (first time or detected changes)")
 
 	// Reload haproxy
-	if err := hap.reload(event.Header.CorrelationId); err != nil {
-		hap.Context.Fields(log.Fields{"id": hap.Config.Id}).WithError(err).Error("Reload failed")
+	if err := hap.reload(event.Header.CorrelationID); err != nil {
+		hap.Context.Fields(log.Fields{"id": hap.Config.ID}).WithError(err).Error("Reload failed")
 		hap.dumpError(event.Conf.Haproxy)
-		if errRollback := hap.rollback(event.Header.CorrelationId); errRollback != nil {
+		if errRollback := hap.rollback(event.Header.CorrelationID); errRollback != nil {
 			log.WithError(errRollback).Error("error in rollback in addition to error of the reload")
 		} else {
 			hap.Context.Fields(log.Fields{}).Debug("rollback done")
@@ -163,11 +163,11 @@ func (hap *Haproxy) restart_killed_haproxy() error {
 		}
 
 		if output, err := hap.Command("ps", "-p", strings.TrimSpace(string(pid))); err == nil {
-			hap.Context.Fields(log.Fields{"id": hap.Config.Id, "output": string(output[:])}).Debug("process haproxy is running. nothing to do.")
+			hap.Context.Fields(log.Fields{"id": hap.Config.ID, "output": string(output[:])}).Debug("process haproxy is running. nothing to do.")
 			return nil
 		} else {
 			hap.Context.Fields(log.Fields{"output": string(output[:])}).WithError(err).Error("process haproxy is not running. attempt to restart it.")
-			if err = hap.reload(hap.Context.CorrelationId); err != nil {
+			if err = hap.reload(hap.Context.CorrelationID); err != nil {
 				hap.Context.Fields(log.Fields{}).WithError(err).Error("can't restart haproxy process")
 			} else {
 				hap.Context.Fields(log.Fields{}).Info("haproxy process restarted after detecting it was killed.")
@@ -247,7 +247,7 @@ func (hap *Haproxy) reload(correlationId string) error {
 		}
 		hap.Context.Fields(log.Fields{"reloadScript": fs.Files.Binary, "confPath": fs.Files.ConfigFile, "pidPath": fs.Files.PidFile, "pid": strings.TrimSpace(string(pid))}).Debug("attempt reload haproxy command")
 		if output, err := hap.Command(fs.Files.Binary, "-f", fs.Files.ConfigFile, "-p", fs.Files.PidFile, "-sf", strings.TrimSpace(string(pid))); err == nil {
-			hap.Context.Fields(log.Fields{"id": hap.Config.Id, "reloadScript": fs.Files.Binary, "output": string(output[:])}).Debug("reload succeeded")
+			hap.Context.Fields(log.Fields{"id": hap.Config.ID, "reloadScript": fs.Files.Binary, "output": string(output[:])}).Debug("reload succeeded")
 		} else {
 			hap.Context.Fields(log.Fields{"output": string(output[:])}).WithError(err).Error("error reloading")
 			return err
@@ -256,7 +256,7 @@ func (hap *Haproxy) reload(correlationId string) error {
 		hap.Context.Fields(log.Fields{"reloadScript": fs.Files.Binary, "confPath": fs.Files.ConfigFile, "pid file": fs.Files.PidFile}).Info("start haproxy for the first time")
 		output, err := hap.Command(fs.Files.Binary, "-f", fs.Files.ConfigFile, "-p", fs.Files.PidFile)
 		if err == nil {
-			hap.Context.Fields(log.Fields{"id": hap.Config.Id, "reloadScript": fs.Files.Binary, "output": string(output[:])}).Info("success of the first haproxy start")
+			hap.Context.Fields(log.Fields{"id": hap.Config.ID, "reloadScript": fs.Files.Binary, "output": string(output[:])}).Info("success of the first haproxy start")
 		} else {
 			hap.Context.Fields(log.Fields{"output": string(output[:])}).WithError(err).Error("fail of the first haproxy start")
 			return err
@@ -375,7 +375,7 @@ func dumpConfiguration(context Context, filename string, newConf []byte) {
 		f.WriteString("================================================================\n")
 		f.WriteString(fmt.Sprintf("application: %s\n", context.Application))
 		f.WriteString(fmt.Sprintf("platform: %s\n", context.Platform))
-		f.WriteString(fmt.Sprintf("correlationId: %s\n", context.CorrelationId))
+		f.WriteString(fmt.Sprintf("correlationId: %s\n", context.CorrelationID))
 		f.WriteString("================================================================\n")
 		f.Write(newConf)
 		f.Sync()

@@ -41,7 +41,7 @@ func NewRestApi(properties *Config, consumers Consumers) *RestApi {
 func (api *RestApi) Start() error {
 	sm := http.NewServeMux()
 	sm.HandleFunc("/id", func(writer http.ResponseWriter, request *http.Request) {
-		fmt.Fprintf(writer, "%s", api.properties.Id)
+		fmt.Fprintf(writer, "%s", api.properties.ID)
 	})
 	sm.HandleFunc("/ismaster", func(writer http.ResponseWriter, request *http.Request) {
 		isMaster, err := api.properties.IsMaster(request.URL.Query().Get("vip"))

@@ -84,13 +84,13 @@ func main() {
 		hapInstallations["1.5.11"] = hapInstallation1511
 
 		defaultConfigIn := &sidekick.Config{
-			ClusterId:        "local",
+			ClusterID:        "local",
 			ProducerAddr:     "localhost:4150",
 			ProducerRestAddr: "http://localhost:4151",
 			Port:             50000,
 			HapHome:          "/HOME/hapadm",
 			LookupdAddresses: []string{"localhost:4161", "localhost:4162"},
-			Id:               "hostname",
+			ID:               "hostname",
 			Hap:              hapInstallations,
 		}
 		toml.NewEncoder(defaultConfigOut).Encode(defaultConfigIn)
@@ -127,8 +127,8 @@ func main() {
 	syslog = sidekick.NewSyslog(properties)
 	syslog.Init()
 	log.WithFields(log.Fields{
-		"id":        properties.Id,
-		"clusterId": properties.ClusterId,
+		"id":        properties.ID,
+		"clusterId": properties.ClusterID,
 	}).Info("Starting sidekick")
 
 	config.Set("concurrency", runtime.GOMAXPROCS(runtime.NumCPU()))
@@ -152,10 +152,10 @@ func main() {
 
 	// Start consumers
 	consumers = sidekick.NewConsumers(*properties, *config, sdkLogger)
-	consumers.PutAndStartConsumer(fmt.Sprintf("delete_requested_%s", properties.ClusterId), onDeleteRequested)
-	consumers.PutAndStartConsumer(fmt.Sprintf("commit_requested_%s", properties.ClusterId), onCommitRequested)
-	consumers.PutAndStartConsumer(fmt.Sprintf("commit_slave_completed_%s", properties.ClusterId), onCommitSlaveCompleted)
-	consumers.PutAndStartConsumer(fmt.Sprintf("commit_completed_%s", properties.ClusterId), onCommitCompleted)
+	consumers.PutAndStartConsumer(fmt.Sprintf("delete_requested_%s", properties.ClusterID), onDeleteRequested)
+	consumers.PutAndStartConsumer(fmt.Sprintf("commit_requested_%s", properties.ClusterID), onCommitRequested)
+	consumers.PutAndStartConsumer(fmt.Sprintf("commit_slave_completed_%s", properties.ClusterID), onCommitSlaveCompleted)
+	consumers.PutAndStartConsumer(fmt.Sprintf("commit_completed_%s", properties.ClusterID), onCommitCompleted)
 
 	var wg sync.WaitGroup
 	// Start http API
@@ -205,24 +205,24 @@ func createTopicsAndChannels() {
 
 	for _, topic := range topics {
 		// create the topic
-		log.WithField("topic", topic).WithField("clusterId", properties.ClusterId).Info("creating topic")
-		url := fmt.Sprintf("%s/topic/create?topic=%s_%s", properties.ProducerRestAddr, topic, properties.ClusterId)
+		log.WithField("topic", topic).WithField("clusterId", properties.ClusterID).Info("creating topic")
+		url := fmt.Sprintf("%s/topic/create?topic=%s_%s", properties.ProducerRestAddr, topic, properties.ClusterID)
 		respTopic, err := http.PostForm(url, nil)
 		if err == nil && respTopic.StatusCode == 200 {
-			log.WithField("topic", topic).WithField("clusterId", properties.ClusterId).Debug("topic created")
+			log.WithField("topic", topic).WithField("clusterId", properties.ClusterID).Debug("topic created")
 		} else {
-			log.WithField("topic", topic).WithField("clusterId", properties.ClusterId).WithError(err).Panic("topic can't be created")
+			log.WithField("topic", topic).WithField("clusterId", properties.ClusterID).WithError(err).Panic("topic can't be created")
 		}
 
 		// create the channels of the topics
-		log.WithField("topic", topic).WithField("channel", properties.Id).Info("creating channel")
-		url = fmt.Sprintf("%s/channel/create?topic=%s_%s&channel=%s", properties.ProducerRestAddr, topic, properties.ClusterId, properties.Id)
+		log.WithField("topic", topic).WithField("channel", properties.ID).Info("creating channel")
+		url = fmt.Sprintf("%s/channel/create?topic=%s_%s&channel=%s", properties.ProducerRestAddr, topic, properties.ClusterID, properties.ID)
 		respChannel, err := http.PostForm(url, nil)
 		if err == nil && respChannel.StatusCode == 200 {
-			log.WithField("channel", properties.Id).WithField("topic", topic).Info("channel created")
+			log.WithField("channel", properties.ID).WithField("topic", topic).Info("channel created")
 		} else {
 			// retry all for this topic if channel creation failed
-			log.WithField("topic", topic).WithField("channel", properties.Id).WithField("clusterId", properties.ClusterId).WithError(err).Panic("channel can't be created")
+			log.WithField("topic", topic).WithField("channel", properties.ID).WithField("clusterId", properties.ClusterID).WithError(err).Panic("channel can't be created")
 		}
 
 	}
@@ -342,13 +342,13 @@ func reloadHaProxy(data *sidekick.EventMessageWithConf, masterRole bool) error {
 			}
 		}
 		if masterRole || hap.Fake() || *mono {
-			publishMessage("commit_completed_", data.Clone(properties.Id), context)
+			publishMessage("commit_completed_", data.Clone(properties.ID), context)
 		} else {
-			publishMessage("commit_slave_completed_", data.CloneWithConf(properties.Id), context)
+			publishMessage("commit_slave_completed_", data.CloneWithConf(properties.ID), context)
 		}
 	} else {
 		context.Fields(log.Fields{}).WithError(err).Error("Commit failed")
-		publishMessage("commit_failed_", data.Clone(properties.Id), context)
+		publishMessage("commit_failed_", data.Clone(properties.ID), context)
 	}
 	return nil
 }
@@ -363,7 +363,7 @@ func bodyToData(jsonStream []byte) (*sidekick.EventMessageWithConf, error) {
 
 func publishMessage(topicPrefix string, data interface{}, context sidekick.Context) error {
 	jsonMsg, _ := json.Marshal(data)
-	topic := topicPrefix + properties.ClusterId
+	topic := topicPrefix + properties.ClusterID
 	if *logCompact {
 		context.Fields(log.Fields{"topic": topic}).Debug("publish on topic")
 	} else {
