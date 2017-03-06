@@ -239,6 +239,7 @@ func loadProperties() {
 	if properties.HapHome[length - 1] == '/' {
 		properties.HapHome = properties.HapHome[:length - 1]
 	}
+	log.WithField("properties", fmt.Sprintf("%+v", properties)).Info("load properties")
 }
 
 func filteredHandler(event string, message *nsq.Message, f sidekick.HandlerFunc) error {

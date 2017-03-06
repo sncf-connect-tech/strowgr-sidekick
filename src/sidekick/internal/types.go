@@ -15,7 +15,7 @@ type HapInstallation struct {
 
 // Config contains all sidekick configuration
 type Config struct {
-	LookupdAddresses []string `toml:"LookupAddresses"`
+	LookupdAddresses []string `toml:"LookupdAddresses"`
 	ProducerAddr     string `toml:"ProducerAddr"`
 	ProducerRestAddr string `toml:"ProducerRestAddr"`
 	ClusterID        string `toml:"ClusterId"`
