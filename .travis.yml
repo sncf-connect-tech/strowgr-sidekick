@@ -28,7 +28,6 @@ deploy:
     on:
       tags: true
       repo: voyages-sncf-technologies/strowgr-sidekick
-      branch: master
   - provider: script
     skip_cleanup: true
     script: cp sidekick-$(cat $TRAVIS_BUILD_DIR/VERSION) sidekick && docker build -t strowgr/sidekick:$(cat VERSION) . && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" && docker push strowgr/sidekick:$(cat VERSION)
