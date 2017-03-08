@@ -13,14 +13,12 @@ if [ $# -lt 1 ]; then usage; fi
 VERSION="$1"
 
 # change version in branch
-git checkout "${VERSION}"
+git checkout .
 echo -n "${VERSION}" > VERSION
 git add VERSION
 git commit -m "[release] v${VERSION}"
 
-# merge commits into master && create tag
-git checkout master
-git merge "${VERSION}"
+# create tag
 git tag "v${VERSION}"
-git push origin master
+git push
 git push --tags
