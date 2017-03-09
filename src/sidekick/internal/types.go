@@ -39,7 +39,6 @@ func (config Config) IsMaster(vip string) (bool, error) {
 		log.WithField("id", string(body)).WithField("isMaster", isMaster).Debug("check if this instance is master")
 	}
 	return string(body) == config.ID, err
-
 }
 
 // DefaultConfig builds a default config

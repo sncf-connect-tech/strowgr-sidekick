@@ -33,6 +33,7 @@ import (
 	"syscall"
 	"time"
 	"strconv"
+	"io/ioutil"
 )
 
 var (
@@ -120,6 +121,18 @@ func main() {
 
 	loadProperties()
 
+	// preconditions
+	// producer nsqd should be there at start
+	for {
+		if ok, _ := pingNSQD(*properties); ok {
+			break
+		}
+		log.WithField("nsqd address", properties.ProducerRestAddr).Warn("can't ping nsqd. Sidekick is not available yet. Try again 30s later.")
+		time.Sleep(30 * time.Second)
+	}
+	log.WithField("nsqd address", properties.ProducerRestAddr).Warn("ping on nsqd succeed.")
+
+	// initializations
 	haFactory = sidekick.NewLoadbalancerFactory()
 	haFactory.Fake = *fake
 	haFactory.Properties = properties
@@ -197,6 +210,22 @@ func main() {
 
 	log.Printf("Waiting on server to stop\n")
 	wg.Wait()
+}
+
+// pingNSQD sends a ping to nsqd process
+func pingNSQD(config sidekick.Config) (bool, error) {
+	resp, err := http.Get(fmt.Sprintf("%s/ping", config.ProducerRestAddr))
+	if err != nil {
+		log.WithField("address", config.ProducerRestAddr).WithError(err).Error("ping on nsqd fails")
+		return false, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	ok := string(body) == "OK"
+	if log.GetLevel() == log.DebugLevel {
+		log.WithField("payload", string(body)).WithField("is ok ?", ok).Debug("check nsqd returns 'OK'")
+	}
+	return ok, err
 }
 
 func createTopicsAndChannels() {
@@ -372,4 +401,3 @@ func publishMessage(topicPrefix string, data interface{}, context sidekick.Conte
 	}
 	return producer.Publish(topic, []byte(jsonMsg))
 }
-
