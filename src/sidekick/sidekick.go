@@ -265,8 +265,8 @@ func loadProperties() {
 		os.Exit(1)
 	}
 	length := len(properties.HapHome)
-	if properties.HapHome[length - 1] == '/' {
-		properties.HapHome = properties.HapHome[:length - 1]
+	if properties.HapHome[length-1] == '/' {
+		properties.HapHome = properties.HapHome[:length-1]
 	}
 	log.WithField("properties", fmt.Sprintf("%+v", properties)).Info("load properties")
 }
@@ -292,9 +292,9 @@ func filteredHandler(event string, message *nsq.Message, f sidekick.HandlerFunc)
 		// select is here for a non-blocking send on channel in order to dropping messages when channel is full
 		select {
 		case reloadChan <- sidekick.ReloadEvent{F: f, Message: data}:
-			log.WithFields(log.Fields{"event":event, "nsq id":message.ID, "channel length":strconv.Itoa(len(reloadChan)), "channel capacity":strconv.Itoa(cap(reloadChan))}).Debug("push event to reload channel")
+			log.WithFields(log.Fields{"event": event, "nsq id": message.ID, "channel length": strconv.Itoa(len(reloadChan)), "channel capacity": strconv.Itoa(cap(reloadChan))}).Debug("push event to reload channel")
 		default:
-			log.WithFields(log.Fields{"event":event, "nsq id":message.ID, "channel length":strconv.Itoa(len(reloadChan)), "channel capacity":strconv.Itoa(cap(reloadChan))}).Warn("dropped event, can't push it to reload channel.")
+			log.WithFields(log.Fields{"event": event, "nsq id": message.ID, "channel length": strconv.Itoa(len(reloadChan)), "channel capacity": strconv.Itoa(cap(reloadChan))}).Warn("dropped event, can't push it to reload channel.")
 		}
 	case "commit_completed":
 		f(data)
@@ -328,7 +328,8 @@ func reloadSlave(data *sidekick.EventMessageWithConf) error {
 		log.WithField("bind", data.Conf.Bind).WithError(err).Info("can't find if binding to vip")
 	}
 	if isMaster && !*mono {
-		log.Debug("skipped message because server is master and not mono instance")
+		log.Debug("skipped message because server is master and not mono instance (just check killed process)")
+		haFactory.CreateHaproxy(data.Context()).RestartKilledHaproxy()
 		return nil
 	}
 	return reloadHaProxy(data, false)

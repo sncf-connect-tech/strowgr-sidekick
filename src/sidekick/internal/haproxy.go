@@ -32,7 +32,7 @@ import (
 // Haproxy manager for a given Application/Platform
 type Haproxy struct {
 	Config     *Config    // nsqConfig of sidekick
-	Context    *Context    // context of this haproxy (current application/platform/correlationid etc...)
+	Context    *Context   // context of this haproxy (current application/platform/correlationid etc...)
 	Filesystem Filesystem // filesystem with haproxy configuration files
 	Command    Command    // wrapping os command execution
 	Dumper     Dumper     // wrapping for dumping contents on files
@@ -103,7 +103,7 @@ func (hap *Haproxy) ApplyConfiguration(event *EventMessageWithConf) (status int,
 
 		if bytes.Equal(oldConf, event.Conf.Haproxy) && string(oldVersion) == event.Conf.Version {
 			// check and restart killed haproxy
-			if err:=hap.restart_killed_haproxy(); err==nil {
+			if err := hap.RestartKilledHaproxy(); err == nil {
 				// unchanged configuration file
 				hap.Context.Fields(log.Fields{"id": hap.Config.ID}).Debug("unchanged configuration")
 				return UNCHANGED, nil
@@ -147,7 +147,7 @@ func (hap *Haproxy) ApplyConfiguration(event *EventMessageWithConf) (status int,
 	return SUCCESS, nil
 }
 
-func (hap *Haproxy) restart_killed_haproxy() error {
+func (hap *Haproxy) RestartKilledHaproxy() error {
 	hap.Context.Fields(log.Fields{}).Debug("check haproxy is up, restart otherwise")
 
 	fs := hap.Filesystem
@@ -158,7 +158,7 @@ func (hap *Haproxy) restart_killed_haproxy() error {
 			hap.Context.Fields(log.Fields{"pid path": fs.Files.PidFile, "pid": pid}).Error("can't read pid file")
 			return err
 		} else if pid == nil || len(pid) == 0 {
-                        cmd.Remover(fs.Files.PidFile,false)
+			cmd.Remover(fs.Files.PidFile, false)
 			return errors.New("pid file is empty")
 		}
 

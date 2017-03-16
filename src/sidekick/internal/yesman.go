@@ -30,3 +30,9 @@ func (hap YesmanHaproxy) Delete() error {
 func (hap YesmanHaproxy) Fake() bool {
 	return true
 }
+
+// RestartKilledHaproxy restart a fake yesman haproxy
+func (hap YesmanHaproxy) RestartKilledHaproxy() error {
+	hap.context.Fields(log.Fields(nil)).Info("Yes sir!")
+	return nil
+}

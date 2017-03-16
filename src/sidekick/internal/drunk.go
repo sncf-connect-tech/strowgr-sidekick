@@ -33,3 +33,8 @@ func (hap DrunkHaproxy) Delete() error {
 func (hap DrunkHaproxy) Fake() bool {
 	return true
 }
+
+func (hap DrunkHaproxy) RestartKilledHaproxy() error {
+	hap.context.Fields(log.Fields(nil)).Info("go back alive !")
+	return nil
+}

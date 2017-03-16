@@ -7,6 +7,7 @@ type Loadbalancer interface {
 	Stop() error
 	Delete() error
 	Fake() bool
+	RestartKilledHaproxy() error
 }
 
 type LoadbalancerFactory struct {
