@@ -13,24 +13,25 @@ before_script:
   - go vet sidekick
   - go test sidekick
 script:
-  - $HOME/gopath/bin/govvv build -o "sidekick-$(cat VERSION)" sidekick
-  - ./sidekick-$(cat ./VERSION) -version
+  - $HOME/gopath/bin/govvv build -o "sidekick" sidekick
+  - ./sidekick -version
   - go test -coverprofile=coverage.txt -covermode=count sidekick/internal
   - $HOME/gopath/bin/goveralls -service=travis-ci -package=sidekick/internal -coverprofile=coverage.txt -repotoken $COVERALLS_TOKEN
 install:
   - export GOPATH="${TRAVIS_BUILD_DIR}"
+before_deploy: cp ${TRAVIS_BUILD_DIR}/sidekick ${TRAVIS_BUILD_DIR}/sidekick-${TRAVIS_TAG:1:100}
 deploy:
   - provider: releases
     api_key:
       secure: N8vJT1UCWSCDNLY4LwdfCHTeeWqqcOVpuL/c+gjHdgeNXCqtyn496t7/L1IgTCcQPjIL9vXiFQ0ubLa9/xBjcG2hor++9Yi9pvqqyZZldhiaLi6lI2wOfWO7METZgcP1U9+Sv5ZfzAHOp3I2kaaVJMedZQnbuo2kKFbCE4o8cz9ItmaDUxRHoHFwzCpOSDeyCV9Mk2RweX0AOnO6MfxTPZILj9IF4+QhzywmT0MJN5vaBLgr+SCPI5QgFdNIgIL+fwgTIzmRua0b2ajW6MAD/jgDAHavo92W1TbS27pwz4t9q/v94vDwjCIGEuYaysQqijwZyVNxhZwBuFN9CWI0rszwZP4jO37jc4VpdBa2/czY37a7p37le+cVpwavqrESi+iCek+nZzED1pyjyxtPFbML52Mqw8tUPX8GfveWBtZwNB6wq5+7XZT37gyIEkZaYdrdvfEpFmVVLmIyEGEBAYgywZ48DI3QAI7SIiRHUJlcRlB+zPN/wg/EKawiOk/7Bdr4aWUsNPSRQUBUxIj+frmwKNXHvlRSJzER4oQY6rTlwDcvDzKQTT7vxfcd5ZVZXgwKwnEGosyXGhc0o3ZwYzZGhbQGh8HVEu9FKgVtQXCjz2J38SMsP0qJRk8ug5bNL6dxH/oNziWzPOvldOHbs/ex9uTSygCvS7hcB35800A=
-    file: "sidekick-$(cat $TRAVIS_BUILD_DIR/VERSION)"
+    file: "sidekick-${TRAVIS_TAG:1:100}"
     skip_cleanup: true
     on:
       tags: true
       repo: voyages-sncf-technologies/strowgr-sidekick
   - provider: script
     skip_cleanup: true
-    script: cp sidekick-$(cat $TRAVIS_BUILD_DIR/VERSION) sidekick && docker build -t strowgr/sidekick:$(cat VERSION) . && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" && docker push strowgr/sidekick:$(cat VERSION)
+    script: cp sidekick-${TRAVIS_TAG:1:100} sidekick && docker build -t strowgr/sidekick:${TRAVIS_TAG} . && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" && docker push strowgr/sidekick:${TRAVIS_TAG}
     on:
       tags: true
       branch: master
