@@ -152,8 +152,8 @@ func (hap *Haproxy) RestartKilledHaproxy() error {
 
 	fs := hap.Filesystem
 	cmd := fs.Commands
-	if cmd.Exists(fs.Files.PidFile) {
-		pid, err := cmd.Reader(fs.Files.PidFile, true)
+	if cmd.Exists(fs.Files.ConfigFile) {
+		pid, err := cmd.Reader(fs.Files.PidFile, false)
 		if err != nil {
 			hap.Context.Fields(log.Fields{"pid path": fs.Files.PidFile, "pid": pid}).Error("can't read pid file")
 			return err
