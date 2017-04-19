@@ -275,9 +275,9 @@ func filteredHandler(event string, message *nsq.Message, f sidekick.HandlerFunc)
 	defer message.Finish()
 
 	if *logCompact {
-		log.WithField("event", event).WithField("nsq id", message.ID).Debug("new received message from nsq")
+		log.WithField("event", event).WithField("nsq id", string(message.ID)).Debug("new received message from nsq")
 	} else {
-		log.WithField("event", event).WithField("nsq id", message.ID).WithField("raw", string(message.Body)).Debug("new received message from nsq")
+		log.WithField("event", event).WithField("nsq id", string(message.ID)).WithField("raw", string(message.Body)).Debug("new received message from nsq")
 	}
 	data, err := bodyToData(message.Body)
 	if err != nil {
@@ -292,9 +292,9 @@ func filteredHandler(event string, message *nsq.Message, f sidekick.HandlerFunc)
 		// select is here for a non-blocking send on channel in order to dropping messages when channel is full
 		select {
 		case reloadChan <- sidekick.ReloadEvent{F: f, Message: data}:
-			log.WithFields(log.Fields{"event": event, "nsq id": message.ID, "channel length": strconv.Itoa(len(reloadChan)), "channel capacity": strconv.Itoa(cap(reloadChan))}).Debug("push event to reload channel")
+			log.WithFields(log.Fields{"event": event, "nsq id": string(message.ID), "channel length": strconv.Itoa(len(reloadChan)), "channel capacity": strconv.Itoa(cap(reloadChan))}).Debug("push event to reload channel")
 		default:
-			log.WithFields(log.Fields{"event": event, "nsq id": message.ID, "channel length": strconv.Itoa(len(reloadChan)), "channel capacity": strconv.Itoa(cap(reloadChan))}).Warn("dropped event, can't push it to reload channel.")
+			log.WithFields(log.Fields{"event": event, "nsq id": string(message.ID), "channel length": strconv.Itoa(len(reloadChan)), "channel capacity": strconv.Itoa(cap(reloadChan))}).Warn("dropped event, can't push it to reload channel.")
 		}
 	case "commit_completed":
 		f(data)
