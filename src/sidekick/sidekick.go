@@ -24,20 +24,25 @@ import (
 	"github.com/BurntSushi/toml"
 	log "github.com/Sirupsen/logrus"
 	"github.com/bitly/go-nsq"
+	"gopkg.in/natefinch/lumberjack.v2"
+	"io/ioutil"
 	"net/http"
 	"os"
-	"runtime"
 	"os/signal"
+	"path/filepath"
+	"runtime"
 	sidekick "sidekick/internal"
+	"strconv"
 	"sync"
 	"syscall"
 	"time"
-	"strconv"
-	"io/ioutil"
 )
 
 var (
 	configFile       = flag.String("config", "sidekick.conf", "Configuration file")
+	logDir           = flag.String("log-dir", "./", "log directory path")
+	logMaxSize       = flag.Int("log-max-size", 100, "max size of log file in mb")
+	logMaxBackup     = flag.Int("log-max-backup", 10, "max number of backup files")
 	version          = flag.Bool("version", false, "Print current version")
 	verbose          = flag.Bool("verbose", false, "Log in verbose mode")
 	logCompact       = flag.Bool("log-compact", false, "compacting log")
@@ -71,6 +76,14 @@ var (
 
 func main() {
 	flag.Parse()
+	// initialiaze lumberjack and logger for log rotate files
+	lumberjack := &lumberjack.Logger{
+		Filename:   *logDir + string(filepath.Separator) + "sidekick.log",
+		MaxSize:    *logMaxSize, // megabytes
+		MaxBackups: *logMaxBackup,
+	}
+	log.SetOutput(lumberjack)
+	defer lumberjack.Rotate()
 
 	if *generateConfig {
 		defaultConfigOut := new(bytes.Buffer)
