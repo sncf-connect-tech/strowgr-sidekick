@@ -40,9 +40,9 @@ import (
 
 var (
 	configFile       = flag.String("config", "sidekick.conf", "Configuration file")
-	logDir           = flag.String("log-dir", "./", "log directory path")
-	logMaxSize       = flag.Int("log-max-size", 100, "max size of log file in mb")
-	logMaxBackup     = flag.Int("log-max-backup", 10, "max number of backup files")
+	logDir           = flag.String("log-dir", "logs", "log directory path")
+	logMaxSize       = flag.Int("log-max-size", 20, "max size of log file in mb")
+	logMaxBackup     = flag.Int("log-max-backup", 5, "max number of backup files")
 	version          = flag.Bool("version", false, "Print current version")
 	verbose          = flag.Bool("verbose", false, "Log in verbose mode")
 	logCompact       = flag.Bool("log-compact", false, "compacting log")
