@@ -309,6 +309,7 @@ func (hap *Haproxy) Delete() error {
 	// remove bin and nsqConfig files
 	cmd.Remover(fs.Files.ConfigArchive, false)
 	cmd.Remover(fs.Files.BinaryArchive, false)
+	cmd.Remover(fs.Files.SyslogFile, false)
 	cmd.Remover(fs.Files.ConfigFile, true)
 	cmd.Remover(fs.Files.Binary, true)
 	cmd.Remover(fs.Platform.Path, true)
