@@ -19,32 +19,9 @@ package internal
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	"os"
 	"os/exec"
-	"text/template"
 	"time"
 )
-
-const syslogBaseConf = `
-@version: 3.3
-
-options {
-  flush_lines (0);
-  time_reopen (10);
-  chain_hostnames (off);
-};
-
-filter f_local0 { facility(local0); };
-filter f_syslog { level(info..emerg); };
-
-@include "{{.HapHome}}/SYSLOG/Config/syslog.conf.d/"
-
-# SYSLOG
-source s_syslog { internal(); };
-destination d_syslog { file("/HOME/hapadm/SYSLOG/logs/syslog.log"); };
-log { source(s_syslog); filter (f_syslog); destination(d_syslog); };
-
-`
 
 func NewSyslog(properties *Config) *Syslog {
 	return &Syslog{
@@ -76,28 +53,6 @@ func (syslog *Syslog) Restart() error {
 		}
 	}
 	return err
-}
-
-// Init write the frame configuration
-func (syslog *Syslog) Init() error {
-	configDir := fmt.Sprintf("%s/SYSLOG/Config", syslog.properties.HapHome)
-	configFile := fmt.Sprintf("%s/syslog.conf", configDir)
-
-	t := template.New("Syslog template")
-	t, err := t.Parse(syslogBaseConf)
-	if err != nil {
-		log.WithFields(SyslogFields()).Fatal(err)
-	}
-
-	f, err := os.OpenFile(configFile, os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.WithFields(SyslogFields()).WithError(err).Error("Fail to write base syslog file")
-		return err
-	}
-	t.Execute(f, syslog.properties)
-	log.WithFields(SyslogFields()).WithField("filename", configFile).Debug("Syslog conf written")
-
-	return nil
 }
 
 func SyslogFields() log.Fields {
