@@ -151,7 +151,6 @@ func main() {
 	haFactory.Properties = properties
 
 	syslog = sidekick.NewSyslog(properties)
-	syslog.Init()
 	log.WithFields(log.Fields{
 		"id":        properties.ID,
 		"clusterId": properties.ClusterID,
