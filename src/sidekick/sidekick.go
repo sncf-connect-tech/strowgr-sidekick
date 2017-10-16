@@ -106,6 +106,7 @@ func main() {
 			LookupdAddresses: []string{"localhost:4161", "localhost:4162"},
 			ID:               "hostname",
 			Hap:              hapInstallations,
+			Sudo:             true,
 		}
 		toml.NewEncoder(defaultConfigOut).Encode(defaultConfigIn)
 		fmt.Println(defaultConfigOut.String())

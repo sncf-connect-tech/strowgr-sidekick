@@ -23,6 +23,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
@@ -237,6 +238,15 @@ func (hap *Haproxy) dumpError(config []byte) {
 func (hap *Haproxy) reload(correlationId string) error {
 	fs := hap.Filesystem
 	cmd := fs.Commands
+
+	sudo := ""
+	if hap.Config.Sudo {
+		sudo = "sudo"
+	}
+	evalPathBinary, err := filepath.EvalSymlinks(fs.Files.Binary)
+	if err != nil {
+		hap.Context.Fields(log.Fields{}).WithError(err).Error("error reloading")
+	}
 	configurationExists := cmd.Exists(fs.Files.PidFile)
 	if configurationExists {
 		hap.Context.Fields(log.Fields{}).Info("Configuration exists!")
@@ -245,18 +255,19 @@ func (hap *Haproxy) reload(correlationId string) error {
 			hap.Context.Fields(log.Fields{"pid path": fs.Files.PidFile, "pid": pid}).Error("can't read pid file")
 			return err
 		}
-		hap.Context.Fields(log.Fields{"reloadScript": fs.Files.Binary, "confPath": fs.Files.ConfigFile, "pidPath": fs.Files.PidFile, "pid": strings.TrimSpace(string(pid))}).Debug("attempt reload haproxy command")
-		if output, err := hap.Command(fs.Files.Binary, "-f", fs.Files.ConfigFile, "-p", fs.Files.PidFile, "-sf", strings.TrimSpace(string(pid))); err == nil {
+		hap.Context.Fields(log.Fields{"reloadScript": evalPathBinary, "confPath": fs.Files.ConfigFile, "pidPath": fs.Files.PidFile, "pid": strings.TrimSpace(string(pid))}).Debug("attempt reload haproxy command")
+
+		if output, err := hap.Command(sudo, evalPathBinary, "-f", fs.Files.ConfigFile, "-p", fs.Files.PidFile, "-sf", strings.TrimSpace(string(pid))); err == nil {
 			hap.Context.Fields(log.Fields{"id": hap.Config.ID, "reloadScript": fs.Files.Binary, "output": string(output[:])}).Debug("reload succeeded")
 		} else {
 			hap.Context.Fields(log.Fields{"output": string(output[:])}).WithError(err).Error("error reloading")
 			return err
 		}
 	} else {
-		hap.Context.Fields(log.Fields{"reloadScript": fs.Files.Binary, "confPath": fs.Files.ConfigFile, "pid file": fs.Files.PidFile}).Info("start haproxy for the first time")
-		output, err := hap.Command(fs.Files.Binary, "-f", fs.Files.ConfigFile, "-p", fs.Files.PidFile)
+		hap.Context.Fields(log.Fields{"reloadScript": evalPathBinary, "confPath": fs.Files.ConfigFile, "pid file": fs.Files.PidFile}).Info("start haproxy for the first time")
+		output, err := hap.Command(sudo, evalPathBinary, "-f", fs.Files.ConfigFile, "-p", fs.Files.PidFile)
 		if err == nil {
-			hap.Context.Fields(log.Fields{"id": hap.Config.ID, "reloadScript": fs.Files.Binary, "output": string(output[:])}).Info("success of the first haproxy start")
+			hap.Context.Fields(log.Fields{"id": hap.Config.ID, "reloadScript": evalPathBinary, "output": string(output[:])}).Info("success of the first haproxy start")
 		} else {
 			hap.Context.Fields(log.Fields{"output": string(output[:])}).WithError(err).Error("fail of the first haproxy start")
 			return err

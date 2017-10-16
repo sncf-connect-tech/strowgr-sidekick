@@ -15,14 +15,15 @@ type HapInstallation struct {
 
 // Config contains all sidekick configuration
 type Config struct {
-	LookupdAddresses []string `toml:"LookupdAddresses"`
-	ProducerAddr     string `toml:"ProducerAddr"`
-	ProducerRestAddr string `toml:"ProducerRestAddr"`
-	ClusterID        string `toml:"ClusterId"`
-	Port             int32 `toml:"Port"`
-	HapHome          string `toml:"HapHome"`
-	ID               string `toml:"Id"`
+	LookupdAddresses []string                   `toml:"LookupdAddresses"`
+	ProducerAddr     string                     `toml:"ProducerAddr"`
+	ProducerRestAddr string                     `toml:"ProducerRestAddr"`
+	ClusterID        string                     `toml:"ClusterId"`
+	Port             int32                      `toml:"Port"`
+	HapHome          string                     `toml:"HapHome"`
+	ID               string                     `toml:"Id"`
 	Hap              map[string]HapInstallation `toml:"Hap"`
+	Sudo             bool                       `toml:"Sudo"`
 }
 
 // IsMaster answers true if vip points to current sidekick ip
@@ -47,6 +48,7 @@ func DefaultConfig() *Config {
 		Port:      5000,
 		HapHome:   "/HOME/hapadm",
 		ClusterID: "default-name",
+		Sudo:      false,
 	}
 }
 
