@@ -12,19 +12,19 @@ import (
 /////////////////
 
 type TestContext struct {
-	Links   map[string]string
-	Renames map[string]string
-	Removed []string
-	Command string
-	Signal  os.Signal
-	Writes  map[string]string
+	Links     map[string]string
+	Renames   map[string]string
+	Removed   []string
+	Command   string
+	Signal    os.Signal
+	Writes    map[string]string
 	PidExists bool
 }
 
 var context TestContext
 
 func initContext() {
-	context = TestContext{Removed: []string{}, Command: "", Writes: make(map[string]string), Renames: make(map[string]string), Links: make(map[string]string),PidExists:true}
+	context = TestContext{Removed: []string{}, Command: "", Writes: make(map[string]string), Renames: make(map[string]string), Links: make(map[string]string), PidExists: true}
 }
 
 type MockCommands struct{}
@@ -50,7 +50,7 @@ func MockFailedCommand(name string, arg ...string) ([]byte, error) {
 
 func (mc MockCommands) Reader(path string, isPanic bool) ([]byte, error) {
 	if strings.HasSuffix(path, "pid") {
-		if strings.Contains(path,"EMPTY") {
+		if strings.Contains(path, "EMPTY") {
 			return []byte(""), nil
 		} else {
 			return []byte("1234"), nil
@@ -80,7 +80,7 @@ func (mc MockCommands) Linker(origin, destination string, isPanic bool) error {
 }
 
 func (mc MockCommands) Exists(path string) bool {
-	if strings.HasSuffix(path,"pid"){
+	if strings.HasSuffix(path, "pid") {
 		return context.PidExists
 	}
 	return true
@@ -96,7 +96,7 @@ func (mc MockCommands) Remover(path string, isPanic bool) error {
 			panic("archive file " + path + " is not present")
 		}
 		return errors.New("archive file " + path + " is not present")
-	} else if strings.HasSuffix(path,"pid") {
+	} else if strings.HasSuffix(path, "pid") {
 		context.PidExists = false
 	}
 	context.Removed = append(context.Removed, path)
@@ -119,8 +119,12 @@ func (mc MockCommands) ReadLinker(link string, isPanic bool) (string, error) {
 	return "/export/product/haproxy/product/1/bin/haproxy", nil
 }
 
+func (mc MockCommands) EvalSymLinks(path string) (string, error) {
+	return path, nil
+}
+
 func newMockHaproxyWithArgs(config Config, context Context) *Haproxy {
-	hap := NewHaproxy(&config,&context)
+	hap := NewHaproxy(&config, &context)
 	hap.Filesystem.Commands = MockCommands{}
 	hap.Command = MockCommand
 	hap.Config.Hap = createHapInstallations()

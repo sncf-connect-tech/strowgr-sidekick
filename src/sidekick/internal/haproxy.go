@@ -23,7 +23,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
@@ -243,7 +242,7 @@ func (hap *Haproxy) reload(correlationId string) error {
 	if hap.Config.Sudo {
 		sudo = "sudo"
 	}
-	evalPathBinary, err := filepath.EvalSymlinks(fs.Files.Binary)
+	evalPathBinary, err := cmd.EvalSymLinks(fs.Files.Binary)
 	if err != nil {
 		hap.Context.Fields(log.Fields{}).WithError(err).Error("error reloading")
 	}

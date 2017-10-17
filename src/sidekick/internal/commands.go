@@ -3,6 +3,7 @@ package internal
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 )
 
 // commands
@@ -15,6 +16,7 @@ type Commands interface {
 	Remover(path string, isPanic bool) error
 	ReadLinker(path string, isPanic bool) (string, error)
 	MkdirAll(path string) error
+	EvalSymLinks(path string) (string, error)
 }
 
 // os implementation
@@ -94,4 +96,8 @@ func (osCmd OsCommands) MkdirAll(path string) error {
 		}
 	}
 	return nil
+}
+
+func (osCmd OsCommands) EvalSymLinks(path string) (string, error) {
+	return filepath.EvalSymlinks(path)
 }
