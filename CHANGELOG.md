@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.3.2
+
+* **feature**: add a sudo option for running haproxy process
+
+
 ## v0.3.1
 
 * **improvement**: log rotate for sidekick.log
