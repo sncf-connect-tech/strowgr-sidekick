@@ -48,7 +48,7 @@ func DefaultConfig() *Config {
 		Port:      5000,
 		HapHome:   "/HOME/hapadm",
 		ClusterID: "default-name",
-		Sudo:      false,
+		Sudo:      true,
 	}
 }
 
