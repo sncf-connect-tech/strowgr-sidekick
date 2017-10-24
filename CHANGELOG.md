@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.3.3
+
+* **fix**: sudo command
+* **change**: sudo by default
+
+
 ## v0.3.2
 
 * **feature**: add a sudo option for running haproxy process
