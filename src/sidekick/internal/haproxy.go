@@ -277,7 +277,7 @@ func (hap *Haproxy) reload(correlationId string) error {
 			output, err = hap.Command(evalPathBinary, "-f", fs.Files.ConfigFile, "-p", fs.Files.PidFile)
 		}
 		if err == nil {
-			hap.Context.Fields(log.Fields{"id": hap.Config.ID, "reloadScript": evalPathBinary, "output": string(output[:])}).Info("success of the first haproxy start")
+			hap.Context.Fields(log.Fields{"id": hap.Config.ID, "sudo": sudo, "reloadScript": evalPathBinary, "output": string(output[:])}).Info("success of the first haproxy start")
 		} else {
 			hap.Context.Fields(log.Fields{"output": string(output[:])}).WithError(err).Error("fail of the first haproxy start")
 			return err
