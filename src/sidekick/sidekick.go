@@ -118,7 +118,7 @@ func main() {
 	if *logCompact {
 		log.SetFormatter(&sidekick.CompactFormatter{})
 	} else {
-		log.SetFormatter(&log.TextFormatter{})
+		log.SetFormatter(&log.TextFormatter{DisableColors: true})
 	}
 
 	if *version {

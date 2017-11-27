@@ -9,4 +9,4 @@ haproxy-default-name.conf*
 version-1
 src/github.com
 src/golang.org
-./sidekick
+sidekick

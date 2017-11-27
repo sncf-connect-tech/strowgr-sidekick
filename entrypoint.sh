@@ -8,7 +8,7 @@ ClusterId = "$CLUSTER_ID"
 Port = $HTTP_PORT
 HapHome = "$HAP_HOME"
 Id = "$ID"
-Status = "$STATUS"
+Sudo = false
 
 [Hap."1.4.22"]
 Path="/opt/haproxy-1.4.22"
@@ -23,4 +23,4 @@ EOF
 echo "Starting sidekick with config: "
 cat /etc/sidekick.conf
 
-exec /sidekick -config=/etc/sidekick.conf $ARGS
+exec /sidekick -config=/etc/sidekick.conf -mono -verbose
