@@ -261,7 +261,6 @@ func (hap *Haproxy) reload(correlationId string) error {
 			output, err = hap.Command(evalPathBinary, "-f", fs.Files.ConfigFile, "-p", fs.Files.PidFile, "-sf", strings.TrimSpace(string(pid)))
 		}
 		hap.Context.Fields(log.Fields{"sudo": hap.Config.Sudo, "reloadScript": evalPathBinary, "confPath": fs.Files.ConfigFile, "pidPath": fs.Files.PidFile, "pid": strings.TrimSpace(string(pid))}).Debug("attempt reload haproxy command")
-
 		if err == nil {
 			hap.Context.Fields(log.Fields{"id": hap.Config.ID, "reloadScript": fs.Files.Binary, "output": string(output[:])}).Debug("reload succeeded")
 		} else {
