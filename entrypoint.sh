@@ -23,4 +23,4 @@ EOF
 echo "Starting sidekick with config: "
 cat /etc/sidekick.conf
 
-exec /sidekick -config=/etc/sidekick.conf $@
+exec /sidekick -config=/etc/sidekick.conf $ARGS

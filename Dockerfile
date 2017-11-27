@@ -28,6 +28,7 @@ ENV HTTP_PORT="50000"
 ENV HAP_HOME="/data"
 ENV STATUS="master"
 ENV ID="sidekick"
+ENV ARGS=""
 
 VOLUME /data
 
