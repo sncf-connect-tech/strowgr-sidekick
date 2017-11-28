@@ -16,13 +16,13 @@ func (hap YesmanHaproxy) ApplyConfiguration(data *EventMessageWithConf) (int, er
 
 // Stop this fake haproxy
 func (hap YesmanHaproxy) Stop() error {
-	hap.context.Fields(log.Fields{}).Info("Stop yesman instance")
+	log.Info("Stop yesman instance")
 	return nil
 }
 
 // Delete this fake haproxy
 func (hap YesmanHaproxy) Delete() error {
-	hap.context.Fields(log.Fields{}).Info("Delete yesman instance")
+	log.Info("Delete yesman instance")
 	return nil
 }
 
@@ -33,6 +33,6 @@ func (hap YesmanHaproxy) Fake() bool {
 
 // RestartKilledHaproxy restart a fake yesman haproxy
 func (hap YesmanHaproxy) RestartKilledHaproxy() error {
-	hap.context.Fields(log.Fields(nil)).Info("Yes sir!")
+	log.Info("Yes sir!")
 	return nil
 }
