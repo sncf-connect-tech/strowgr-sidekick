@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.3.4
+
+* **ci**: improve docker image for including mono mode. Now only one instance is needed and to validate.
+
 ## v0.3.3
 
 * **fix**: sudo command
