@@ -10,3 +10,4 @@ version-1
 src/github.com
 src/golang.org
 sidekick
+vendor/
