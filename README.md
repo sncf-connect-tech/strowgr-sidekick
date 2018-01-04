@@ -7,14 +7,20 @@
 $ GOPATH=$PWD go build sidekick
 ```
 
-# Build with govvv
+# Build with go 
+  1. SET (GOARCH,GOOS) to (amd64,linux) for linux and (GOARCH,GOOS) to (amd64,windows) for windows.
+  
+  You can:
+  
+  2. either run 
+    - go install -a github.com/voyages-sncf-technologies/strowgr-sidekick.
+    - The executable is at $GOPATH/bin or $GOPATH/bin/$GOOS_$GOARCH and is named strowgr_sidekick.
+  
+  3. At root of your project: 
+    - go build -o sidekick
+    - The executable is at the root of the project and is named sidekick.
 
-govvv is a tool for versioning binaries
- 
-```
-$ export GOPATH=$PWD
-$ go get github.com/ahmetalpbalkan/govvv
-$ govvv build sidekick
+
 $ ./sidekick -version
 Version: 0.2.3-SNAPSHOT
 Build date: 2016-12-01T22:18:43Z
@@ -70,3 +76,11 @@ Execute following command to create a release:
 ```bash
 ./release.sh 0.1.0
 ```
+
+Local Desk Installation
+  1.  If no existing workspace, create one (== Empty Directory).
+  2.  Set GOPATH to this workspace.
+  3.   Think about set GOOS and GOARCH, depending of your OS: (GOARCH,GOOS)  = (amd64,linux) or (amd64,windows)
+  4.   If not present, get go dep: go get -u github.com/golang/dep/cmd/dep
+    - in windows command line, the window could close after executing, so you can run: start go get -u github.com/golang/dep/cmd/dep 
+  5.  Get the projet: run: go get github.com/voyages-sncf-technologies/strowgr-sidekick (start github.com/voyages-sncf-technologies/strowgr-sidekick) 

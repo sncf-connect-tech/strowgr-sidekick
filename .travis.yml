@@ -3,23 +3,19 @@ sudo: required
 services:
   - docker
 go:
-  - 1.7
+  - 1.9.1
 before_install:
+  - go get github.com/golang/dep/cmd/dep
   - go get github.com/mattn/goveralls
-  - go get github.com/ahmetalpbalkan/govvv
-install:
-  - export GOPATH="${TRAVIS_BUILD_DIR}"
-before_script:
-  - go vet sidekick
-  - go test sidekick
 script:
-  - $HOME/gopath/bin/govvv build -o "sidekick" sidekick
-  - ./sidekick -version
-  - go test -coverprofile=coverage.txt -covermode=count sidekick/internal
-  - $HOME/gopath/bin/goveralls -service=travis-ci -package=sidekick/internal -coverprofile=coverage.txt -repotoken $COVERALLS_TOKEN
-install:
-  - export GOPATH="${TRAVIS_BUILD_DIR}"
-before_deploy: cp ${TRAVIS_BUILD_DIR}/sidekick ${TRAVIS_BUILD_DIR}/sidekick-${TRAVIS_TAG:1:100}
+  - dep ensure  
+  - go install -a github.com/voyages-sncf-technologies/strowgr-sidekick/cmd/sidekick
+  - sidekick -version
+  - go vet github.com/voyages-sncf-technologies/strowgr-sidekick/cmd/sidekick
+  - go vet github.com/voyages-sncf-technologies/strowgr-sidekick/internal  
+  - go test -coverprofile=coverage.txt -covermode=count github.com/voyages-sncf-technologies/strowgr-sidekick/internal
+  - goveralls -service=travis-ci -package=github.com/voyages-sncf-technologies/strowgr-sidekick/cmd/sidekick -coverprofile=coverage.txt -repotoken $COVERALLS_TOKEN
+before_deploy: cp $GOPATH/bin/sidekick ${TRAVIS_BUILD_DIR}/sidekick-${TRAVIS_TAG:1:100}
 deploy:
   - provider: releases
     api_key:
@@ -37,3 +33,4 @@ deploy:
       branch: master
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+  
