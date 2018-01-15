@@ -254,6 +254,7 @@ func (hap *Haproxy) reload(correlationId string) error {
 			hap.Context.Fields(log.Fields{"pid path": fs.Files.PidFile, "pid": pid}).Error("can't read pid file")
 			return err
 		}
+
 		var output []byte
 		if hap.Config.Sudo {
 			output, err = hap.Command("sudo", evalPathBinary, "-f", fs.Files.ConfigFile, "-p", fs.Files.PidFile, "-sf", strings.TrimSpace(string(pid)))
