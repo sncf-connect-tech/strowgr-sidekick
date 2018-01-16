@@ -13,7 +13,7 @@ $ GOPATH=$PWD go build sidekick
   You can:
   
   2. either run 
-    - go install -a github.com/voyages-sncf-technologies/strowgr-sidekick.
+    - go install -a github.com/voyages-sncf-technologies/strowgr-sidekick/cmd/sidekick.
     - The executable is at $GOPATH/bin or $GOPATH/bin/$GOOS_$GOARCH and is named strowgr_sidekick.
   
   3. At root of your project: 
@@ -78,9 +78,27 @@ Execute following command to create a release:
 ```
 
 Local Desk Installation
-  1.  If no existing workspace, create one (== Empty Directory).
-  2.  Set GOPATH to this workspace.
-  3.   Think about set GOOS and GOARCH, depending of your OS: (GOARCH,GOOS)  = (amd64,linux) or (amd64,windows)
-  4.   If not present, get go dep: go get -u github.com/golang/dep/cmd/dep
-    - in windows command line, the window could close after executing, so you can run: start go get -u github.com/golang/dep/cmd/dep 
-  5.  Get the projet: run: go get github.com/voyages-sncf-technologies/strowgr-sidekick (start github.com/voyages-sncf-technologies/strowgr-sidekick) 
+  0. Prequisite: Install go if not present.
+    0.1. Set GOROOT the installation folder 
+    0.2. add GOROOT/bin to PATH
+  1. If no existing workspace, create one (== Empty Directory).
+  2. Set GOPATH to this workspace.
+    2.1.  ADD GOPATH/bin to PATH
+  3.   If not present, get go dep: go get -u -v github.com/golang/dep/cmd/dep 
+    3.1 dep executable is installed at GOPATH/bin
+  4. Get the projet: run: go get -v github.com/voyages-sncf-technologies/strowgr-sidekick
+  5. Go to the project at GOPATH/src/github.com/voyages-sncf-technologies/strowgr-sidekick
+  7. Install dependencies, run: dep ensure to install dependencies (vendor sub folder created).
+  8. To build a native executable:
+    8.1 run go install -a github.com/voyages-sncf-technologies/strowgr-sidekick/cmd/sidekick.
+      sidekick executable will be installed in GOPATH/bin, so in the PATH
+    8.2 At root of the project only, you can also run: 
+      8.2.1 For windows user: go build -o sidekick.exe sidekick executable will be installed in GOPATH/bin
+      8.2.2 For linux user: go build -o sidekick executable will be installed in GOPATH/bin
+      8.2.3 You can arbitraly choose the value for -o option, but need .exe extension for windows run
+
+  9. To build a docker image in local desk
+    9.1 the executable you build has to be embedded in docker linux image, so you will have to change GOOS to linux if necessary (and reset it after)
+       
+  
+  - WARN: in windows command line, the window could close after executing, so you can run: start go get -u -v github.com/golang/dep/cmd/dep      
