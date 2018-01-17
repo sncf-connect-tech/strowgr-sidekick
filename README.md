@@ -79,18 +79,18 @@ Execute following command to create a release:
 
 Local Desk Installation.
   0. Prequisite: Install go if not present.
-      0.1. Set GOROOT the installation folder. 
-      0.2. add GOROOT/bin to PATH.
+    0.1. Set GOROOT the installation folder. 
+    0.2. add GOROOT/bin to PATH.
   1. If no existing workspace, create one (== Empty Directory).
   2. Set GOPATH to this workspace.
     2.1.  ADD GOPATH/bin to PATH
-  3.   If not present, get go dep: go get -u -v github.com/golang/dep/cmd/dep 
+  3.  If not present, get go dep: go get -u -v github.com/golang/dep/cmd/dep 
     3.1 dep executable is installed at GOPATH/bin
   4. Get the projet: run: go get -v github.com/voyages-sncf-technologies/strowgr-sidekick
   5. Go to the project at GOPATH/src/github.com/voyages-sncf-technologies/strowgr-sidekick
-  7. Install dependencies, run: dep ensure to install dependencies (vendor sub folder created).
-  8. To build a native executable:
-    8.1 run go install -a github.com/voyages-sncf-technologies/strowgr-sidekick/cmd/sidekick.
+  7. Install dependencies, run: dep ensure to install dependencies (vendor sub folder created)
+  8. To build a native executable
+    8.1 Run go install -a github.com/voyages-sncf-technologies/strowgr-sidekick/cmd/sidekick.
       sidekick executable will be installed in GOPATH/bin, so in the PATH
     8.2 At root of the project only, you can also run: 
       8.2.1 For windows user: go build -o sidekick.exe sidekick executable will be installed in GOPATH/bin
