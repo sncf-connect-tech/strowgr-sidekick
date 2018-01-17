@@ -84,7 +84,7 @@ Local Desk Installation.
   1. If no existing workspace, create one (== Empty Directory).
   2. Set GOPATH to this workspace.
     2.1.  ADD GOPATH/bin to PATH
-  3.  If not present, get go dep: go get -u -v github.com/golang/dep/cmd/dep 
+  3.  If not present, get go dep: go get -u -v github.com/golang/dep/cmd/dep. 
     3.1 dep executable is installed at GOPATH/bin
   4. Get the projet: run: go get -v github.com/voyages-sncf-technologies/strowgr-sidekick
   5. Go to the project at GOPATH/src/github.com/voyages-sncf-technologies/strowgr-sidekick
