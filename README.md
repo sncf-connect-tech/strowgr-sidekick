@@ -97,7 +97,7 @@ Local Desk Installation.
       8.2.2 For linux user: go build -o sidekick executable will be installed in GOPATH/bin
       8.2.3 You can arbitraly choose the value for -o option, but need .exe extension for windows run
 
-  9. To build a docker image in local desk
+  9. To build a docker image in local desk.
     9.1 the executable you build has to be embedded in docker linux image, so you will have to change GOOS to linux if necessary (and reset it after)
        
   
