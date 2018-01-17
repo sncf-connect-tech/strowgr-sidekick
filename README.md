@@ -79,8 +79,8 @@ Execute following command to create a release:
 
 Local Desk Installation.
   0. Prequisite: Install go if not present.
-    0.1. Set GOROOT the installation folder 
-    0.2. add GOROOT/bin to PATH
+      0.1. Set GOROOT the installation folder. 
+      0.2. add GOROOT/bin to PATH.
   1. If no existing workspace, create one (== Empty Directory).
   2. Set GOPATH to this workspace.
     2.1.  ADD GOPATH/bin to PATH
