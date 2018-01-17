@@ -77,7 +77,7 @@ Execute following command to create a release:
 ./release.sh 0.1.0
 ```
 
-Local Desk Installation
+Local Desk Installation.
   0. Prequisite: Install go if not present.
     0.1. Set GOROOT the installation folder 
     0.2. add GOROOT/bin to PATH
