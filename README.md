@@ -8,18 +8,15 @@ $ GOPATH=$PWD go build sidekick
 ```
 
 # Build with go 
-  1. SET (GOARCH,GOOS) to (amd64,linux) for linux and (GOARCH,GOOS) to (amd64,windows) for windows.
-  
+  * SET (GOARCH,GOOS) to (amd64,linux) for linux and (GOARCH,GOOS) to (amd64,windows) for windows.
   You can:
+  * either run 
+    * go install -a github.com/voyages-sncf-technologies/strowgr-sidekick/cmd/sidekick.
+    * The executable is at $GOPATH/bin or $GOPATH/bin/$GOOS_$GOARCH and is named strowgr_sidekick.
   
-  2. either run 
-    - go install -a github.com/voyages-sncf-technologies/strowgr-sidekick/cmd/sidekick.
-    - The executable is at $GOPATH/bin or $GOPATH/bin/$GOOS_$GOARCH and is named strowgr_sidekick.
-  
-  3. At root of your project: 
-    - go build -o sidekick
-    - The executable is at the root of the project and is named sidekick.
-
+  * At root of your project: 
+    * go build -o sidekick
+    * The executable is at the root of the project and is named sidekick.
 
 $ ./sidekick -version
 Version: 0.2.3-SNAPSHOT
