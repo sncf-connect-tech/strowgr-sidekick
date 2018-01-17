@@ -77,10 +77,10 @@ Execute following command to create a release:
 ./release.sh 0.1.0
 ```
 
-Local Desk Installation
+# Local Desk Installation.
   0. Prequisite: Install go if not present.
-     0.1. Set GOROOT the installation folder 
-     0.2. add GOROOT/bin to PATH
+     0.1. Set GOROOT the installation folder. 
+     0.2. add GOROOT/bin to PATH.
   1. If no existing workspace, create one (== Empty Directory).
   2. Set GOPATH to this workspace.
      2.1.  ADD GOPATH/bin to PATH
@@ -95,7 +95,6 @@ Local Desk Installation
           8.2.1 For windows user: go build -o sidekick.exe sidekick executable will be installed in GOPATH/bin
           8.2.2 For linux user: go build -o sidekick executable will be installed in GOPATH/bin
           8.2.3 You can arbitraly choose the value for -o option, but need .exe extension for windows run
-
   9. To build a docker image in local desk
      9.1 the executable you build has to be embedded in docker linux image, so you will have to change GOOS to linux if necessary (and reset it after)
   
