@@ -83,15 +83,15 @@ Execute following command to create a release:
      * ADD GOPATH/bin to PATH
   3.  If not present, get go dep: go get -u -v github.com/golang/dep/cmd/dep 
       * dep executable is installed at GOPATH/bin
-  4.  Get the projet: run: go get -v github.com/voyages-sncf-technologies/strowgr-sidekick
-  5.  Go to the project at GOPATH/src/github.com/voyages-sncf-technologies/strowgr-sidekick
+  4.  Get the projet: run: go get -v github.com/voyages-sncf-technologies/strowgr-sidekick.
+  5.  Go to the project at GOPATH/src/github.com/voyages-sncf-technologies/strowgr-sidekick.
   7.  Install dependencies, run: dep ensure to install dependencies (vendor sub folder created).
   8.  To build a native executable:
-      * run go install -a github.com/voyages-sncf-technologies/strowgr-sidekick/cmd/sidekick. sidekick executable will be installed in GOPATH/bin, so in the PATH
+      * run go install -a github.com/voyages-sncf-technologies/strowgr-sidekick/cmd/sidekick. sidekick executable will be installed in GOPATH/bin, so in the PATH.
       * At root of the project only, you can also run: 
         * For windows user: go build -o sidekick.exe sidekick executable will be installed in GOPATH/bin
-        * For linux user: go build -o sidekick executable will be installed in GOPATH/bin
-        * You can arbitraly choose the value for -o option, but need .exe extension for windows run
+        * For linux user: go build -o sidekick executable will be installed in GOPATH/bin.
+        * You can arbitraly choose the value for -o option, but need .exe extension for windows run.
   9. To build a docker image in local desk
      * the executable you build has to be embedded in docker linux image, so you will have to change GOOS to linux if necessary (and reset it after)
   
