@@ -62,17 +62,7 @@ Usage of ./sidekick:
 
 # Release
 
-For a release branch created like this:
-
-```bash
-git checkout -b 0.1.0 develop
-```
-
-Execute following command to create a release:
-
-```bash
-./release.sh 0.1.0
-```
+  Git standard way ==> https://git-scm.com/book/en/v2/Git-Basics-Tagging
 
 # Local Desk Installation.
   0. Prequisite: Install go if not present.
